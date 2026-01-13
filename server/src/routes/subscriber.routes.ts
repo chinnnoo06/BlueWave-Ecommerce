@@ -1,7 +1,7 @@
 import express  from 'express';
 import { body } from 'express-validator';
 import { handleInputErrors } from '../middleware/handleInputErrors';
-import { addSubscriber, redirectToRemovePage, removeSubscriber } from '../controllers/subscriber';
+import { addSubscriber, redirectToRemovePage, removeSubscriber } from '../controllers/subscriber.controller';
 
 const router = express.Router();
 

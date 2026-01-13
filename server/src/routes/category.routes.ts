@@ -1,6 +1,6 @@
 import express from 'express';
 import { body, param } from "express-validator";
-import { addCategory, getCategories, removeCategory, updateCategory } from '../controllers/category';
+import { addCategory, getCategories, removeCategory, updateCategory } from '../controllers/category.controller';
 import { auth } from '../middleware/auth';
 import { handleInputErrors } from '../middleware/handleInputErrors';
 import { convertCategoryToWebP } from '../middleware/convertToWebP';

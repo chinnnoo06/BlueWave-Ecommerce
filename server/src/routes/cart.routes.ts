@@ -2,7 +2,7 @@ import express from 'express';
 import { body } from "express-validator";
 import { auth } from '../middleware/auth';
 import { handleInputErrors } from '../middleware/handleInputErrors';
-import { addToCart, clearCart, decreaseToCart, getCart, getLSCard, loadLSCard, pruebaCart, removeItem } from '../controllers/cart';
+import { addToCart, clearCart, decreaseToCart, getCart, getLSCard, loadLSCard, pruebaCart, removeItem } from '../controllers/cart.controller';
 
 const router = express.Router();
 

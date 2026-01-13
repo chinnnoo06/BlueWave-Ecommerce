@@ -7,7 +7,7 @@ import { auth, authOptional } from '../middleware/auth';
 import { handleInputErrors } from '../middleware/handleInputErrors';
 import { convertProductToWebP } from '../middleware/convertToWebP';
 
-import { addProduct, removeProduct, addPromotion, removePromotion, updateProduct, getProducts, getCarouselProducts, getSearch, getOneProduct } from '../controllers/products';
+import { addProduct, removeProduct, addPromotion, removePromotion, updateProduct, getProducts, getCarouselProducts, getSearch, getOneProduct } from '../controllers/products.controller';
 
 const router = express.Router();
 

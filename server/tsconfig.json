@@ -12,14 +12,9 @@
     "declaration": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    
-    // 1. Point typeRoots to the new custom_types folder
-    "typeRoots": ["./node_modules/@types", "./src/custom_types"],
 
-    "baseUrl": ".",
-    "paths": {
-      "@types/*": ["src/types/*"]
-    }
+    // 👇 solo esto para tus types globales
+    "typeRoots": ["./node_modules/@types", "./src/custom_types"]
   },
   "include": ["src"],
   "ts-node": {

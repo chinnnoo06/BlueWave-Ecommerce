@@ -1,6 +1,6 @@
 import express  from 'express';
 import { auth } from '../middleware/auth';
-import { checkOut, getPurchases, validateCard } from '../controllers/purchase';
+import { checkOut, getPurchases, validateCard } from '../controllers/purchase.controller';
 
 const router = express.Router();
 

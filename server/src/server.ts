@@ -8,15 +8,15 @@ import path from 'path'
 import { connection } from './config/conection'
 
 // Ruters
-import userRoutes from './routes/userRoutes'
-import categoryRoutes from './routes/categoryRoutes'
-import productRoutes from './routes/productRoutes'
-import cartRoutes from './routes/cartRoutes'
-import purchaseRoutes from './routes/purchaseRoutes'
-import subscriberRoutes from './routes/subscriberRoutes'
-import articleRoutes from './routes/articleRoutes'
-import stateRoutes from './routes/stateRoutes'
-import stripeWebhookRouter from "./routes/stripeWebHookRouter"
+import userRoutes from './routes/user.routes'
+import categoryRoutes from './routes/category.routes'
+import productRoutes from './routes/product.routes'
+import cartRoutes from './routes/cart.routes'
+import purchaseRoutes from './routes/purchase.routes'
+import subscriberRoutes from './routes/subscriber.routes'
+import articleRoutes from './routes/article.routes'
+import stateRoutes from './routes/state.routes'
+import stripeWebhookRouter from "./routes/stripeWebHook.routes"
 
 connection()
 

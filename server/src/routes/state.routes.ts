@@ -1,6 +1,6 @@
 import express  from 'express';
 import { body } from 'express-validator';
-import { getStates } from '../controllers/state';
+import { getStates } from '../controllers/state.controller';
 
 const router = express.Router();
 

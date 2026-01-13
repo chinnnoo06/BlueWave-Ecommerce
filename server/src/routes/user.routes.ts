@@ -1,6 +1,6 @@
 import express from 'express';
 import { body, param } from "express-validator";
-import { addFavorite, contactEmail, createCodeToRecoverPassword, forwardEmail, getFavoriteProducts, getProfile, login, logout, registerUser, removeAddress, removeFavorite, saveNewPassword, updateAddress, updateUserInfo, updateUserPassword, validateCodeToRecoverPassword, verifyAccount, verifySuccessToken } from "../controllers/user";
+import { addFavorite, contactEmail, createCodeToRecoverPassword, forwardEmail, getFavoritesProducts, getProfile, login, logout, registerUser, removeAddress, removeFavorite, saveNewPassword, updateAddress, updateUserInfo, updateUserPassword, validateCodeToRecoverPassword, verifyAccount, verifySuccessToken } from "../controllers/user.controller";
 import { auth, authOptional } from '../middleware/auth';
 import { handleInputErrors } from '../middleware/handleInputErrors';
 
@@ -111,7 +111,7 @@ router.patch("/remove-favorites",
 
 router.get("/get-favorites",
     auth(['client']),
-    getFavoriteProducts
+    getFavoritesProducts
 )
 
 router.post("/contact-email",

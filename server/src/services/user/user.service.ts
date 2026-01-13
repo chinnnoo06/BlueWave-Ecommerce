@@ -1,14 +1,103 @@
-import { User } from "../../models/User"
-import { TUser, TUserLogged } from "../../types/user/user.types"
+import bcrypt from 'bcrypt'
 
-export const validateUserExistByEmail = async (email: TUser['email']) => {
-  return await User.findOne({ email: email })
+import { userRepository } from "../../repositories/user/user.repository"
+import { TUserUpdateInfo, TUserUpdatePassword } from "../../types/params/params.types"
+import { TAddress, TUserId } from "../../types/user/user.types"
+import { TProductId } from '../../types/product/product.types'
+import { productRepository } from '../../repositories/product/product.repository'
+import { TContact } from '../../types/communication'
+import { sendContactEmail } from '../email/email.service'
+
+export const getProfileService = async (id: TUserId['_id']) => {
+  const user = await userRepository.findById(id)
+
+  if (!user) throw new Error("No esta registrada esta cuenta")
+
+  return user
 }
 
-export const validateUserExistById = async (id: TUserLogged['_id'], includePassword: boolean = false) => {
-  if (includePassword) {
-    return await User.findById(id)
-  } else {
-    return await User.findById(id).select({ password: 0 })
+export const updateUserInfoService = async (id: TUserId['_id'], data: TUserUpdateInfo) => {
+  const user = await userRepository.updateUserInfo(id, data)
+
+  if (!user) throw new Error("No esta registrada esta cuenta")
+
+  return user
+}
+
+export const updateUserPasswordService = async (id: TUserId['_id'], data: TUserUpdatePassword) => {
+  const userExists = await userRepository.findById(id)
+
+  if (!userExists) throw new Error("No esta registrada esta cuenta")
+
+  const pwd = bcrypt.compareSync(data.oldPassword, userExists.password)
+
+  if (!pwd) throw new Error('Contraseña Incorrecta')
+
+  const verifyNewPwd = bcrypt.compareSync(data.newPassword, userExists.password)
+
+  if (verifyNewPwd) throw new Error('La contraseña nueva no puede ser igual que la anterior')
+
+  const newPwd = await bcrypt.hash(data.newPassword, 10);
+
+  await userRepository.updateUserPassword(id, newPwd)
+}
+
+export const updateAddressService = async (id: TUserId['_id'], data: TAddress) => {
+  const user = await userRepository.updateAddress(id, data)
+
+  if (!user) throw new Error("No esta registrada esta cuenta")
+
+  return user
+}
+
+export const removeAddressService = async (id: TUserId['_id']) => {
+  const cleanedAddress: TAddress = {
+    street: "",
+    number: "",
+    state: "",
+    city: "",
+    postalCode: "",
   }
+
+  const user = await userRepository.removeAddress(id, cleanedAddress)
+
+  if (!user) throw new Error("No esta registrada esta cuenta")
+
+  return user
+}
+
+export const addFavoriteService = async (id: TUserId['_id'], idProduct: TProductId['_id']) => {
+  const productExist = await productRepository.findById(idProduct)
+
+  if (!productExist) throw new Error("Producto no encontrado")
+
+  const user = await userRepository.addFavorite(id, idProduct)
+
+  if (!user) throw new Error("No esta registrada esta cuenta")
+}
+
+export const removeFavoriteService = async (id: TUserId['_id'], idProduct: TProductId['_id']) => {
+  const productExist = await productRepository.findById(idProduct)
+
+  if (!productExist) throw new Error("Producto no encontrado")
+
+  const user = await userRepository.removeFavorite(id, idProduct)
+
+  if (!user) throw new Error("No esta registrada esta cuenta")
+}
+
+export const getFavoritesProductsService = async (id: TUserId['_id']) => {
+  const userExists = await userRepository.findById(id)
+
+  if (!userExists) throw new Error("No esta registrada esta cuenta")
+
+  const favoritesIds = userExists.favorites
+
+  const products = await productRepository.getFavoriteProducts(favoritesIds)
+
+  return products
+}
+
+export const contactEmailService = async (data: TContact) => {
+  await sendContactEmail(data)
 }

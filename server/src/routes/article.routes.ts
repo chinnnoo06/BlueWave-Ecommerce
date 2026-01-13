@@ -1,7 +1,7 @@
 import express from 'express';
 import { body, param } from 'express-validator';
 import { handleInputErrors } from '../middleware/handleInputErrors';
-import { addArticle, getArticles, getInitialArticles, getOneArticle } from '../controllers/article';
+import { addArticle, getArticles, getInitialArticles, getOneArticle } from '../controllers/article.controller';
 import { auth } from '../middleware/auth';
 
 

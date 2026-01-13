@@ -2,6 +2,8 @@ import { Types } from "mongoose";
 import { Cart } from "../../models/Cart";
 import { TPurchaseItem } from "../../types/purchase/purchase.types";
 import { validateProductExist } from "../product/product.service";
+import { TUserId } from "../../types/user/user.types";
+import { cartRepository } from "../../repositories/cart/cart.repository";
 
 export const validateCartInternal = async (userId: Types.ObjectId) => {
   const cart = await Cart.findOne({ user: userId });
@@ -73,4 +75,13 @@ export const validateCartInternal = async (userId: Types.ObjectId) => {
     delivery,
     total: grandTotal
   }
+}
+
+
+export const createCartService = async (data: TUserId['_id']) => {
+  await cartRepository.create({
+    user: data,
+    items: [],
+    total: 0
+  })
 }
