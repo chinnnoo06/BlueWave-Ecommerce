@@ -1,18 +1,12 @@
 import { Request, Response } from "express";
 import colors from 'colors'
 
-import { State } from "../models/State";
+import { getStatesService } from "../services/state/state.service";
 
 export const getStates = async (req: Request, res: Response) => {
 
     try {
-        const states = await State
-            .find()
-            .sort({ name: 1 });
-
-        if (states.length === 0) {
-            throw new Error('No hay estados')
-        }
+        const states = await getStatesService()
 
         return res.status(200).json({
             status: "success",

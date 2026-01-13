@@ -3,22 +3,14 @@ import colors from 'colors'
 
 import { TSubscriber } from "../types/communication";
 import { Subscriber } from "../models/Subscriber";
-import { sendWelcomeSubscriberEmail } from "../services/email/email.service";
+import { addSubscriberService, removeSubscriberService } from "../services/subscriber/subscriber.service";
+import { removeAddressService } from "../services/user/user.service";
 
 export const addSubscriber = async (req: Request<{}, {}, TSubscriber>, res: Response) => {
-    let params = req.body;
+    let params = req.body
     try {
-        const subscriberExist = await Subscriber.findOne({ email: params.email })
-
-        if (subscriberExist) {
-            throw new Error('Este correo ya esta registrado')
-        }
-
-        const newSubscriber = new Subscriber(params)
-        await newSubscriber.save()
-
-        await sendWelcomeSubscriberEmail(params.email)
-
+        await addSubscriberService(params)
+    
         return res.status(200).json({
             status: "success",
             mensaje: "Email registrado con exito"
@@ -45,7 +37,7 @@ export const removeSubscriber = async (req: Request<TSubscriber, {}, {}>, res: R
     const email = decodeURIComponent(req.params.email);
 
     try {
-        await Subscriber.findOneAndDelete({ email });
+        await removeSubscriberService(email)
 
         return res.status(200).json({
             status: "success",

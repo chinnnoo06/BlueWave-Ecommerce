@@ -1,22 +1,18 @@
 import { Request, Response } from "express"
 import colors from 'colors'
-import { Types } from "mongoose";
 
 import { TArticle } from "../types/article/article.types";
-import { Article } from "../models/Article";
-
+import { addArticleService, getArticlesService, getInitialsArticlesService, getOneArticleService } from "../services/article/article.service";
 
 export const addArticle = async (req: Request<{}, {}, TArticle>, res: Response) => {
-    let params = req.body;
+    const params = req.body;
     try {
-
-        const newArticle = new Article(params)
-        const createArticle = await newArticle.save()
+        const article = await addArticleService(params)
 
         return res.status(200).json({
             status: "success",
-            article: createArticle,
-            mensaje: "Artículo registrado con exito"
+            mensaje: "Artículo registrado con exito",
+            article,
         });
     } catch (error) {
         console.log(colors.red.bold("Error al registrar artículo"));
@@ -29,18 +25,12 @@ export const addArticle = async (req: Request<{}, {}, TArticle>, res: Response) 
 
 export const getArticles = async (req: Request, res: Response) => {
     try {
-
-        const articles = await Article.find()
-
-        if (articles.length === 0) {
-            throw new Error('No hay artículos')
-        }
+        const articles = await getArticlesService()
 
         return res.status(200).json({
             status: "success",
             articles
         });
-
     } catch (error) {
         console.log(colors.red.bold("Error al obtener artículos"));
         return res.status(400).json({
@@ -51,34 +41,14 @@ export const getArticles = async (req: Request, res: Response) => {
 }
 
 type TGetInitialArticlesParams = {
-  excluded?: string
+    excluded?: string
 }
 
-export const getInitialArticles = async (req: Request<TGetInitialArticlesParams, {}, {}>, res: Response) => {
+export const getInitialsArticles = async (req: Request<TGetInitialArticlesParams, {}, {}>, res: Response) => {
+    const { excluded } = req.params
+
     try {
-        const { excluded } = req.params
-
-        const pipeline: any[] = []
-
-        // excluir artículo si viene
-        if (excluded && Types.ObjectId.isValid(excluded)) {
-            pipeline.push({
-                $match: {
-                    _id: { $ne: new Types.ObjectId(excluded) }
-                }
-            })
-        }
-
-        // random + límite
-        pipeline.push(
-            { $sample: { size: 2 } }
-        )
-
-        const articles = await Article.aggregate(pipeline)
-
-        if (!articles.length) {
-            throw new Error("No hay artículos")
-        }
+        const articles = await getInitialsArticlesService(excluded)
 
         return res.status(200).json({
             status: "success",
@@ -95,18 +65,14 @@ export const getInitialArticles = async (req: Request<TGetInitialArticlesParams,
 }
 
 type TGetOneArticleParams = {
-  slug: TArticle['slug']
+    slug: TArticle['slug']
 }
 
-export const getOneArticle= async (req: Request<TGetOneArticleParams, {}, {}>, res: Response) => {
+export const getOneArticle = async (req: Request<TGetOneArticleParams, {}, {}>, res: Response) => {
+    const { slug } = req.params
+
     try {
-        const {slug } = req.params
-
-        const article = await Article.findOne({slug: slug})
-
-        if (!article) {
-            throw new Error("No existe el atículo")
-        }
+        const article = await getOneArticleService(slug)
 
         return res.status(200).json({
             status: "success",

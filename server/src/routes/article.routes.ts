@@ -1,7 +1,7 @@
 import express from 'express';
 import { body, param } from 'express-validator';
 import { handleInputErrors } from '../middleware/handleInputErrors';
-import { addArticle, getArticles, getInitialArticles, getOneArticle } from '../controllers/article.controller';
+import { addArticle, getArticles, getInitialsArticles, getOneArticle } from '../controllers/article.controller';
 import { auth } from '../middleware/auth';
 
 
@@ -131,11 +131,11 @@ router.get("/get", getArticles)
 router.get("/get-initials/:excluded",
     param('excluded').isMongoId().withMessage('El ID es incorrecto'),
     handleInputErrors,
-    getInitialArticles
+    getInitialsArticles
 )
 
 router.get("/get-initials",
-    getInitialArticles
+    getInitialsArticles
 )
 
 router.get("/get/:slug",
