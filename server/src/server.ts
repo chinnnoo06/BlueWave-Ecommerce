@@ -17,6 +17,7 @@ import subscriberRoutes from './routes/subscriber.routes'
 import articleRoutes from './routes/article.routes'
 import stateRoutes from './routes/state.routes'
 import stripeWebhookRouter from "./routes/stripeWebHook.routes"
+import { errorHandler } from './middleware/error'
 
 connection()
 
@@ -57,7 +58,6 @@ server.use("/api/subscriber", subscriberRoutes)
 server.use("/api/article", articleRoutes)
 server.use("/api/state", stateRoutes)
 
-server.get('/api', (req, res) => {
-  res.json({msg: 'Desde API'})
-})
+server.use(errorHandler);
+
 export default server

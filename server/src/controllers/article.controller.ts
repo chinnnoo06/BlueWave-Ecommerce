@@ -1,10 +1,10 @@
-import { Request, Response } from "express"
+import { NextFunction, Request, Response } from "express"
 import colors from 'colors'
 
 import { TArticle } from "../types/article/article.types";
 import { addArticleService, getArticlesService, getInitialsArticlesService, getOneArticleService } from "../services/article/article.service";
 
-export const addArticle = async (req: Request<{}, {}, TArticle>, res: Response) => {
+export const addArticle = async (req: Request<{}, {}, TArticle>, res: Response, next: NextFunction) => {
     const params = req.body;
     try {
         const article = await addArticleService(params)
@@ -16,14 +16,11 @@ export const addArticle = async (req: Request<{}, {}, TArticle>, res: Response) 
         });
     } catch (error) {
         console.log(colors.red.bold("Error al registrar artículo"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }
 
-export const getArticles = async (req: Request, res: Response) => {
+export const getArticles = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const articles = await getArticlesService()
 
@@ -33,10 +30,7 @@ export const getArticles = async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.log(colors.red.bold("Error al obtener artículos"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }
 
@@ -44,7 +38,7 @@ type TGetInitialArticlesParams = {
     excluded?: string
 }
 
-export const getInitialsArticles = async (req: Request<TGetInitialArticlesParams, {}, {}>, res: Response) => {
+export const getInitialsArticles = async (req: Request<TGetInitialArticlesParams, {}, {}>, res: Response, next: NextFunction) => {
     const { excluded } = req.params
 
     try {
@@ -56,11 +50,7 @@ export const getInitialsArticles = async (req: Request<TGetInitialArticlesParams
         })
     } catch (error) {
         console.log(colors.red.bold("Error al obtener artículos"))
-        return res.status(400).json({
-            status: "error",
-            mensaje:
-                error instanceof Error ? error.message : "Error desconocido"
-        })
+        next(error);
     }
 }
 
@@ -68,7 +58,7 @@ type TGetOneArticleParams = {
     slug: TArticle['slug']
 }
 
-export const getOneArticle = async (req: Request<TGetOneArticleParams, {}, {}>, res: Response) => {
+export const getOneArticle = async (req: Request<TGetOneArticleParams, {}, {}>, res: Response, next: NextFunction) => {
     const { slug } = req.params
 
     try {
@@ -80,10 +70,6 @@ export const getOneArticle = async (req: Request<TGetOneArticleParams, {}, {}>, 
         })
     } catch (error) {
         console.log(colors.red.bold("Error al obtener artículo"))
-        return res.status(400).json({
-            status: "error",
-            mensaje:
-                error instanceof Error ? error.message : "Error desconocido"
-        })
+        next(error);
     }
 }

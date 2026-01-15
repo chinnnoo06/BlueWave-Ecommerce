@@ -3,6 +3,7 @@ import { Types } from "mongoose";
 export type TPurchaseItem = {
     productId: Types.ObjectId,
     productName: string,
+    productSlug: string,
     colorImage: string
     colorHex: string
     quantity: number;
@@ -15,5 +16,5 @@ export type TPurchase = {
     total: number,
     stripeSessionId: string,
     paymentIntent: string,
-    status: "paid" | "refunded" | "failed",
+    status?: "paid" | "refunded" | "failed",
 }

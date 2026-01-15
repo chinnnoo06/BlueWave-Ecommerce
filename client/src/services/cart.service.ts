@@ -105,8 +105,6 @@ export const decreaseToCart = async (dataAction: TActionCart): Promise<TCart> =>
             withCredentials: true,
         });
 
-        console.log(data)
-
         if (data.status !== "success") {
             throw new Error("Respuesta inválida del servidor");
         }

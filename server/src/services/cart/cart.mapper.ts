@@ -1,19 +1,13 @@
+import { HttpError } from "../../helpers";
 import { Cart } from "../../models/Cart";
+import { cartRepository } from "../../repositories/cart/cart.repository";
+import { TCartId } from "../../types/cart/cart.types";
 import { TProductwithID } from "../../types/product/product.types";
 
+export const buildCartResponse = async (cartId: TCartId['_id']) => {
+  const cart = await cartRepository.cartResponse(cartId)
 
-export const buildCartResponse = async (cartId: string) => {
-  const cart = await Cart.findById(cartId)
-    .populate({
-      path: "items.productId",
-      populate: {
-        path: "category",
-        select: "name"
-      }
-    })
-    .lean();
-
-  if (!cart) throw new Error("Cart no encontrado");
+  if (!cart) throw new HttpError(404, "Cart no encontrado");
 
   const itemsWithImages = cart.items.map(item => {
     const product = item.productId as unknown;
@@ -25,7 +19,7 @@ export const buildCartResponse = async (cartId: string) => {
       !("colors" in product) ||
       !("category" in product)
     ) {
-      throw new Error("Producto no poblado correctamente");
+      throw new HttpError(400, "Producto no poblado correctamente");
     }
 
     const typedProduct = product as TProductwithID;
@@ -33,6 +27,7 @@ export const buildCartResponse = async (cartId: string) => {
     return {
       productId: typedProduct._id,
       productName: typedProduct.name,
+      productSlug: typedProduct.slug,
       category: (typedProduct.category as any)?.name ?? "",
       colorImage: typedProduct.colors[item.selectedColor].images[0],
       quantity: item.quantity,

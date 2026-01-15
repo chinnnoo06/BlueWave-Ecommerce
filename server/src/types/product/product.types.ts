@@ -24,3 +24,4 @@ export type TProduct = {
 export type TProductwithID = TProduct & { _id: Types.ObjectId }
 
 export type TProductId = { _id: Types.ObjectId };
+

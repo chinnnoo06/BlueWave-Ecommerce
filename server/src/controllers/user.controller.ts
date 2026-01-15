@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import colors from 'colors'
 
@@ -12,9 +12,9 @@ import { successToken } from "../services/jwt/tokenUrl.service";
 import { createToken } from "../services/jwt/token.service";
 import { createCodeToRecoverPasswordService, forwardEmailService, loginService, registerUserService, saveNewPasswordService, validateCodeToRecoverPasswordService, verifyAccountService } from "../services/user/user.auth.service";
 import { addFavoriteService, contactEmailService, getFavoritesProductsService, getProfileService, removeAddressService, removeFavoriteService, updateAddressService, updateUserInfoService, updateUserPasswordService } from "../services/user/user.service";
+import { HttpError } from "../helpers";
 
-
-export const registerUser = async (req: Request<{}, {}, TUser>, res: Response) => {
+export const registerUser = async (req: Request<{}, {}, TUser>, res: Response, next: NextFunction) => {
     const params = req.body;
 
     try {
@@ -27,10 +27,7 @@ export const registerUser = async (req: Request<{}, {}, TUser>, res: Response) =
         });
     } catch (error) {
         console.log(colors.red.bold("Error al guardar en la bd"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }
 
@@ -38,7 +35,7 @@ type TSendEmailReq = {
     email: TUser['email'];
 };
 
-export const forwardEmail = async (req: Request<{}, {}, TSendEmailReq>, res: Response) => {
+export const forwardEmail = async (req: Request<{}, {}, TSendEmailReq>, res: Response, next: NextFunction) => {
     const email = req.body.email
 
     try {
@@ -50,14 +47,11 @@ export const forwardEmail = async (req: Request<{}, {}, TSendEmailReq>, res: Res
         });
     } catch (error) {
         console.log(colors.red.bold("Error al reenviar correo de verificación"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error al reenviar correo de verificación"
-        });
+        next(error);
     }
 }
 
-export const verifyAccount = async (req: Request<TUserIdParams, {}, {}>, res: Response) => {
+export const verifyAccount = async (req: Request<TUserIdParams, {}, {}>, res: Response, next: NextFunction) => {
     const { token } = req.query;
 
     try {
@@ -75,10 +69,7 @@ export const verifyAccount = async (req: Request<TUserIdParams, {}, {}>, res: Re
 
     } catch (error) {
         console.log(colors.red.bold("Error al verificar cuenta"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error al verificar cuenta"
-        });
+        next(error);
     }
 }
 
@@ -99,7 +90,7 @@ export const verifySuccessToken = async (req: Request, res: Response) => {
     }
 };
 
-export const login = async (req: Request<{}, {}, TLogin>, res: Response) => {
+export const login = async (req: Request<{}, {}, TLogin>, res: Response, next: NextFunction) => {
     const params = req.body;
 
     try {
@@ -134,10 +125,7 @@ export const login = async (req: Request<{}, {}, TLogin>, res: Response) => {
 
     } catch (error) {
         console.log(colors.red.bold("Error al iniciar sesión"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }
 
@@ -153,7 +141,7 @@ export const logout = async (req: Request, res: Response) => {
     });
 }
 
-export const createCodeToRecoverPassword = async (req: Request<{}, {}, TSendEmailReq>, res: Response) => {
+export const createCodeToRecoverPassword = async (req: Request<{}, {}, TSendEmailReq>, res: Response, next: NextFunction) => {
     const email = req.body.email
 
     try {
@@ -165,10 +153,7 @@ export const createCodeToRecoverPassword = async (req: Request<{}, {}, TSendEmai
         });
     } catch (error) {
         console.log(colors.red.bold("Error al enviar correo de verificación para restablecer contraseña"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error al enviar correo de verificación para restablecer contraseña"
-        });
+        next(error);
     }
 }
 
@@ -177,7 +162,7 @@ type TValidateCodeToRecoverPassword = {
     code: string
 }
 
-export const validateCodeToRecoverPassword = async (req: Request<{}, {}, TValidateCodeToRecoverPassword>, res: Response) => {
+export const validateCodeToRecoverPassword = async (req: Request<{}, {}, TValidateCodeToRecoverPassword>, res: Response, next: NextFunction) => {
     let email = req.body.email
     let code = req.body.code
 
@@ -191,10 +176,7 @@ export const validateCodeToRecoverPassword = async (req: Request<{}, {}, TValida
 
     } catch (error) {
         console.log(colors.red.bold("Error al verificar código de recuperación de contraseña"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error al verificar código de recuperación de contraseña"
-        });
+        next(error);
     }
 }
 
@@ -203,7 +185,7 @@ type TSaveNewPassword = {
     newPassword: TUser['password']
 }
 
-export const saveNewPassword = async (req: Request<{}, {}, TSaveNewPassword>, res: Response) => {
+export const saveNewPassword = async (req: Request<{}, {}, TSaveNewPassword>, res: Response, next: NextFunction) => {
     const email = req.body.email
     const newPassword = req.body.newPassword
 
@@ -218,14 +200,11 @@ export const saveNewPassword = async (req: Request<{}, {}, TSaveNewPassword>, re
         });
     } catch (error) {
         console.log(colors.red.bold("Error al actualizar contraseña"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error al actualizar contraseña"
-        });
+        next(error);
     }
 }
 
-export const getProfile = async (req: Request, res: Response) => {
+export const getProfile = async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
         return res.status(200).json({
             status: "success",
@@ -245,15 +224,12 @@ export const getProfile = async (req: Request, res: Response) => {
 
     } catch (error) {
         console.log(colors.red.bold("Error al obtener perfil"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }
 
 
-export const updateUserInfo = async (req: Request<{}, {}, TUserUpdateInfo>, res: Response) => {
+export const updateUserInfo = async (req: Request<{}, {}, TUserUpdateInfo>, res: Response, next: NextFunction) => {
     const params = req.body
     const id = req.user._id
 
@@ -268,14 +244,11 @@ export const updateUserInfo = async (req: Request<{}, {}, TUserUpdateInfo>, res:
 
     } catch (error) {
         console.log(colors.red.bold("Error al actualizar la información del usuairo"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }
 
-export const updateUserPassword = async (req: Request<{}, {}, TUserUpdatePassword>, res: Response) => {
+export const updateUserPassword = async (req: Request<{}, {}, TUserUpdatePassword>, res: Response, next: NextFunction) => {
     const params = req.body
     const id = req.user._id
 
@@ -288,14 +261,11 @@ export const updateUserPassword = async (req: Request<{}, {}, TUserUpdatePasswor
         });
     } catch (error) {
         console.log(colors.red.bold("Error al actualizar la contraseña del usuairo"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }
 
-export const updateAddress = async (req: Request<{}, {}, TAddress>, res: Response) => {
+export const updateAddress = async (req: Request<{}, {}, TAddress>, res: Response, next: NextFunction) => {
     const params = req.body
     const id = req.user._id
 
@@ -309,14 +279,11 @@ export const updateAddress = async (req: Request<{}, {}, TAddress>, res: Respons
         });
     } catch (error) {
         console.log(colors.red.bold("Error al actualizar la dirección"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }
 
-export const removeAddress = async (req: Request, res: Response) => {
+export const removeAddress = async (req: Request, res: Response, next: NextFunction) => {
     const id = req.user._id
 
     try {
@@ -330,14 +297,11 @@ export const removeAddress = async (req: Request, res: Response) => {
 
     } catch (error) {
         console.log(colors.red.bold("Error al actualizar la dirección"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }
 
-export const addFavorite = async (req: Request<{}, {}, TProductId>, res: Response) => {
+export const addFavorite = async (req: Request<{}, {}, TProductId>, res: Response, next: NextFunction) => {
     const params = req.body
     const id = req.user._id
 
@@ -351,14 +315,11 @@ export const addFavorite = async (req: Request<{}, {}, TProductId>, res: Respons
 
     } catch (error) {
         console.log(colors.red.bold("Error al agregar a favoritos"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }
 
-export const removeFavorite = async (req: Request<{}, {}, TProductId>, res: Response) => {
+export const removeFavorite = async (req: Request<{}, {}, TProductId>, res: Response, next: NextFunction) => {
     const params = req.body
     const id = req.user._id
 
@@ -372,14 +333,11 @@ export const removeFavorite = async (req: Request<{}, {}, TProductId>, res: Resp
 
     } catch (error) {
         console.log(colors.red.bold("Error al eliminar de favoritos"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }
 
-export const getFavoritesProducts = async (req: Request, res: Response) => {
+export const getFavoritesProducts = async (req: Request, res: Response, next: NextFunction) => {
     const id = req.user._id
 
     try {
@@ -393,15 +351,12 @@ export const getFavoritesProducts = async (req: Request, res: Response) => {
 
     } catch (error) {
         console.log(colors.red.bold("Error al obtener productos favoritos"))
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        })
+        next(error);
     }
 }
 
 
-export const contactEmail = async (req: Request<{}, {}, TContact>, res: Response) => {
+export const contactEmail = async (req: Request<{}, {}, TContact>, res: Response, next: NextFunction) => {
     let params = req.body
 
     try {
@@ -414,9 +369,6 @@ export const contactEmail = async (req: Request<{}, {}, TContact>, res: Response
 
     } catch (error) {
         console.log(colors.red.bold("Error al enviar correo de contacto"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }

@@ -1,16 +1,14 @@
-import { Request, Response } from "express"
+import { NextFunction, Request, Response } from "express"
 import colors from 'colors'
 
 import { TSubscriber } from "../types/communication";
-import { Subscriber } from "../models/Subscriber";
 import { addSubscriberService, removeSubscriberService } from "../services/subscriber/subscriber.service";
-import { removeAddressService } from "../services/user/user.service";
 
-export const addSubscriber = async (req: Request<{}, {}, TSubscriber>, res: Response) => {
+export const addSubscriber = async (req: Request<{}, {}, TSubscriber>, res: Response, next: NextFunction) => {
     let params = req.body
     try {
         await addSubscriberService(params)
-    
+
         return res.status(200).json({
             status: "success",
             mensaje: "Email registrado con exito"
@@ -18,10 +16,7 @@ export const addSubscriber = async (req: Request<{}, {}, TSubscriber>, res: Resp
 
     } catch (error) {
         console.log(colors.red.bold("Error al registrar suscriptor"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }
 
@@ -33,7 +28,7 @@ export const redirectToRemovePage = (req: Request<TSubscriber, {}, {}>, res: Res
 };
 
 
-export const removeSubscriber = async (req: Request<TSubscriber, {}, {}>, res: Response) => {
+export const removeSubscriber = async (req: Request<TSubscriber, {}, {}>, res: Response, next: NextFunction) => {
     const email = decodeURIComponent(req.params.email);
 
     try {
@@ -46,9 +41,6 @@ export const removeSubscriber = async (req: Request<TSubscriber, {}, {}>, res: R
 
     } catch (error) {
         console.error(colors.red.bold("Error al eliminar suscriptor:"), error);
-        return res.status(500).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 };

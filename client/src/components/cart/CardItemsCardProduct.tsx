@@ -3,6 +3,7 @@ import { useHandleActionToCard } from "../../hooks/useHandleActionToCard"
 import type { TCartItem } from "../../types/cart.types"
 import { GlobalImageProduct } from "../../helpers/config/env"
 import { getOriginalPrice } from "../../helpers/utils/product.utils"
+import { Link } from "react-router-dom"
 
 type TCardItemsCardProductProps = {
     item: TCartItem
@@ -12,19 +13,22 @@ type TCardItemsCardProductProps = {
 }
 
 export const CardItemsCardProduct = ({ item, index, length, isPurchase = false }: TCardItemsCardProductProps) => {
-    const { loading, handleActionToCart } = useHandleActionToCard({ productId: item.productId, selectedColor: item.selectedColor})
-    
+    const { loading, handleActionToCart } = useHandleActionToCard({ productId: item.productId, selectedColor: item.selectedColor })
+
     return (
         <div className={`flex flex-col sm:flex-row gap-5 rounded-lg sm:items-center
                 ${length !== undefined && index < length - 1 ? "mb-10" : ""}`}>
 
             <div className="relative w-full sm:w-40 h-40 rounded-lg flex items-center justify-center">
-                <img
-                    src={`${GlobalImageProduct.url}${item.colorImage}`}
-                    alt={item.productName}
-                    loading="lazy"
-                    className="w-full h-full object-contain"
-                />
+                <Link to={`/producto/${item.productSlug}--${item.productId}`}>
+                    <img
+                        src={`${GlobalImageProduct.url}${item.colorImage}`}
+                        alt={item.productName}
+                        loading="lazy"
+                        className="w-full h-full object-contain"
+                    />
+                </Link>
+
             </div>
 
             <div className="flex-1 flex flex-col">

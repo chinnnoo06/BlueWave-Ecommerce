@@ -1,3 +1,4 @@
+import { TCartItem } from "../cart/cart.types";
 import { TUser } from "../user/user.types";
 
 export type TUserIdParams = { id: string };
@@ -16,3 +17,15 @@ export type TUserUpdatePassword = {
     oldPassword: TUser['password'],
     newPassword: TUser['password']
 }
+
+export type TGetProducts = {
+    category: TCategoryIdParams['id'],
+    page: string
+}
+
+export type TSearchProducts = {
+    search: string,
+    page: string
+}
+
+export type TReqToCart = Pick<TCartItem, "productId" | "selectedColor">

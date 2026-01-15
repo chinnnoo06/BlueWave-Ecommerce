@@ -7,11 +7,12 @@ import { TProductId } from '../../types/product/product.types'
 import { productRepository } from '../../repositories/product/product.repository'
 import { TContact } from '../../types/communication'
 import { sendContactEmail } from '../email/email.service'
+import { HttpError } from '../../helpers'
 
 export const getProfileService = async (id: TUserId['_id']) => {
   const user = await userRepository.findById(id)
 
-  if (!user) throw new Error("No esta registrada esta cuenta")
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta")
 
   return user
 }
@@ -19,7 +20,7 @@ export const getProfileService = async (id: TUserId['_id']) => {
 export const updateUserInfoService = async (id: TUserId['_id'], data: TUserUpdateInfo) => {
   const user = await userRepository.updateUserInfo(id, data)
 
-  if (!user) throw new Error("No esta registrada esta cuenta")
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 
   return user
 }
@@ -27,15 +28,15 @@ export const updateUserInfoService = async (id: TUserId['_id'], data: TUserUpdat
 export const updateUserPasswordService = async (id: TUserId['_id'], data: TUserUpdatePassword) => {
   const userExists = await userRepository.findById(id)
 
-  if (!userExists) throw new Error("No esta registrada esta cuenta")
+  if (!userExists) throw new HttpError(404, "No esta registrada esta cuenta");
 
   const pwd = bcrypt.compareSync(data.oldPassword, userExists.password)
 
-  if (!pwd) throw new Error('Contraseña Incorrecta')
+  if (!pwd) throw new HttpError(401, 'Contraseña Incorrecta')
 
   const verifyNewPwd = bcrypt.compareSync(data.newPassword, userExists.password)
 
-  if (verifyNewPwd) throw new Error('La contraseña nueva no puede ser igual que la anterior')
+  if (verifyNewPwd) throw new HttpError(400, 'La contraseña nueva no puede ser igual que la anterior')
 
   const newPwd = await bcrypt.hash(data.newPassword, 10);
 
@@ -45,7 +46,7 @@ export const updateUserPasswordService = async (id: TUserId['_id'], data: TUserU
 export const updateAddressService = async (id: TUserId['_id'], data: TAddress) => {
   const user = await userRepository.updateAddress(id, data)
 
-  if (!user) throw new Error("No esta registrada esta cuenta")
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 
   return user
 }
@@ -61,7 +62,7 @@ export const removeAddressService = async (id: TUserId['_id']) => {
 
   const user = await userRepository.removeAddress(id, cleanedAddress)
 
-  if (!user) throw new Error("No esta registrada esta cuenta")
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 
   return user
 }
@@ -69,27 +70,27 @@ export const removeAddressService = async (id: TUserId['_id']) => {
 export const addFavoriteService = async (id: TUserId['_id'], idProduct: TProductId['_id']) => {
   const productExist = await productRepository.findById(idProduct)
 
-  if (!productExist) throw new Error("Producto no encontrado")
+  if (!productExist) throw new HttpError(404, "Producto no encontrado");
 
   const user = await userRepository.addFavorite(id, idProduct)
 
-  if (!user) throw new Error("No esta registrada esta cuenta")
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 }
 
 export const removeFavoriteService = async (id: TUserId['_id'], idProduct: TProductId['_id']) => {
   const productExist = await productRepository.findById(idProduct)
 
-  if (!productExist) throw new Error("Producto no encontrado")
+  if (!productExist) throw new HttpError(404, "Producto no encontrado");
 
   const user = await userRepository.removeFavorite(id, idProduct)
 
-  if (!user) throw new Error("No esta registrada esta cuenta")
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 }
 
 export const getFavoritesProductsService = async (id: TUserId['_id']) => {
   const userExists = await userRepository.findById(id)
 
-  if (!userExists) throw new Error("No esta registrada esta cuenta")
+  if (!userExists) throw new HttpError(404, "No esta registrada esta cuenta");
 
   const favoritesIds = userExists.favorites
 
@@ -101,3 +102,13 @@ export const getFavoritesProductsService = async (id: TUserId['_id']) => {
 export const contactEmailService = async (data: TContact) => {
   await sendContactEmail(data)
 }
+
+export const getUserSearchesService = async (userId: TUserId['_id'], search: string) => {
+  await userRepository.getUserSearches(userId, search)
+} 
+
+export const updateUserSearchesService = async (userId: TUserId['_id'], search: string) => {
+  const userUpdated = await userRepository.updateUserSearches(userId, search)
+
+  return userUpdated
+} 

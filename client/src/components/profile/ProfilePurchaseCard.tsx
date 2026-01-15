@@ -103,7 +103,7 @@ export const ProfilePurchaseCard = ({ purchase, index, length }: TProfilePurchas
                             </div>
 
                             <div className="flex justify-between items-center gap-3 pt-4 mt-4 border-t border-[#001F3F]/15">
-                                <Link to={`/producto/${item.productId}`}>
+                                <Link to={`/producto/${item.productSlug}--${item.productId}`}>
                                     <button
                                         className="cursor-pointer flex items-center gap-2 text-[#0C71E4] hover:text-[#0855ae] font-medium text-sm lg:text-base transition-colors"
                                         aria-label={`Ver detalles de ${item.productName}`}

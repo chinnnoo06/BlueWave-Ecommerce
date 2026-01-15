@@ -1,6 +1,7 @@
 import { PipelineStage, Types } from "mongoose";
 import { articleRepository } from "../../repositories/article/article.repository";
 import { TArticle } from "../../types/article/article.types";
+import { HttpError } from "../../helpers";
 
 export const addArticleService = async (data: TArticle) => {
     const article = await articleRepository.addArticle(data)
@@ -11,7 +12,7 @@ export const addArticleService = async (data: TArticle) => {
 export const getArticlesService = async () => {
     const articles = await articleRepository.getArticles()
 
-    if (articles.length === 0) throw new Error('No hay artículos')
+    if (articles.length === 0) throw new HttpError(404, "No hay artículos");
 
     return articles
 }
@@ -35,7 +36,7 @@ export const getInitialsArticlesService = async (excluded: string) => {
 
     const articles = await articleRepository.getInitialsArticles(pipeline)
 
-    if (articles.length === 0) throw new Error('No hay artículos')
+    if (articles.length === 0) throw new HttpError(404, "No hay artículos");
 
     return articles
 }
@@ -43,7 +44,7 @@ export const getInitialsArticlesService = async (excluded: string) => {
 export const getOneArticleService = async (slug: TArticle['slug']) => {
     const article = await articleRepository.getOneArticle(slug)
 
-    if (!article) throw new Error("No existe el atículo")
+    if (!article) throw new HttpError(404, "El artículo no existe");
 
     return article
 }

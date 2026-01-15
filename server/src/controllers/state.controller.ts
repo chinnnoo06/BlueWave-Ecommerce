@@ -1,9 +1,9 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import colors from 'colors'
 
 import { getStatesService } from "../services/state/state.service";
 
-export const getStates = async (req: Request, res: Response) => {
+export const getStates = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const states = await getStatesService()
@@ -14,9 +14,6 @@ export const getStates = async (req: Request, res: Response) => {
         });
     } catch (error) {
         console.log(colors.red.bold("Error al obtener estados de méxico"));
-        return res.status(400).json({
-            status: "error",
-            mensaje: error instanceof Error ? error.message : "Error desconocido"
-        });
+        next(error);
     }
 }

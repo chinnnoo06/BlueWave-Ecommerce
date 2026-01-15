@@ -3,6 +3,7 @@ import z from "zod";
 const PurchaseItemSchema = z.object({
   productId: z.string(),
   productName: z.string(),
+  productSlug: z.string(),
   colorImage: z.string(),
   colorHex: z.string(),
   quantity: z.number().int().positive(),

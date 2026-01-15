@@ -2,7 +2,6 @@
 import { Schema, Types, model } from "mongoose";
 import { TCart, TCartItem } from "../types/cart/cart.types";
 
-
 const CartItemSchema = new Schema<TCartItem>({
     productId: {
         type: Types.ObjectId,

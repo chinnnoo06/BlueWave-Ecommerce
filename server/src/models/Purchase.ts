@@ -13,6 +13,11 @@ const PurchaseItemSchema = new Schema<TPurchaseItem>({
         required: true
     },
 
+    productSlug: {
+        type: String,
+        required: true
+    },
+
     colorImage: {
         type: String,
         required: true

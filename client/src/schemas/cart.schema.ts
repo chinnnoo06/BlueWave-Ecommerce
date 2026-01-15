@@ -3,6 +3,7 @@ import z from "zod";
 export const CartItemSchema = z.object({
     productId: z.string(),
     productName: z.string(),
+    productSlug: z.string(),
     category: z.string(),
     colorImage: z.string(),
     selectedColor: z.number(),

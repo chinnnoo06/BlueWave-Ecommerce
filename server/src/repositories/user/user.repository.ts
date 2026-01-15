@@ -41,4 +41,21 @@ export const userRepository = {
         return User.findByIdAndUpdate(userId, { $pull: { favorites: idProduct } }, { new: true }).select({ password: 0 })
     },
 
+    async getUserSearches(userId: TUserId['_id'], search: string) {
+        User.findByIdAndUpdate(userId, {
+            $pull: { searches: search }
+        });
+    },
+
+    async updateUserSearches(userId: TUserId['_id'], search: string) {
+        return User.findByIdAndUpdate(userId, {
+            $push: {
+                searches: {
+                    $each: [search],
+                    $slice: -5
+                }
+            }
+        }, { new: true });
+    },
+
 }

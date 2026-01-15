@@ -2,7 +2,7 @@ import express from 'express';
 import { body } from "express-validator";
 import { auth } from '../middleware/auth';
 import { handleInputErrors } from '../middleware/handleInputErrors';
-import { addToCart, clearCart, decreaseToCart, getCart, getLSCard, loadLSCard, pruebaCart, removeItem } from '../controllers/cart.controller';
+import { addToCart, clearCart, decreaseToCart, getCart, getLSCard, loadLSCard, removeItemCart } from '../controllers/cart.controller';
 
 const router = express.Router();
 
@@ -27,7 +27,7 @@ router.patch("/remove",
     body('productId').notEmpty().withMessage('El id del producto es obligatorio').isMongoId().withMessage('El ID es incorrecto'),
     body('selectedColor').notEmpty().withMessage('El color es obligatorio').isInt({ min: 0 }).withMessage('Indice de color invalido'),
     handleInputErrors,
-    removeItem
+    removeItemCart
 );
 
 router.patch("/clear",

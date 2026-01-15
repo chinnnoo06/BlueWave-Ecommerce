@@ -22,3 +22,12 @@ function random(seed: number) {
     const x = Math.sin(seed) * 10000;
     return x - Math.floor(x);
 }
+
+export class HttpError extends Error {
+  statusCode: number;
+
+  constructor(statusCode: number, message: string) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
