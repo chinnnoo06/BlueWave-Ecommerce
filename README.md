@@ -156,8 +156,10 @@ cd bluewave
 
 ## 2. Configurar Backend
 
+```bash
 cd server
 npm install
+```
 
 ### Crear un archivo .env en la carpeta server:
 
@@ -172,12 +174,16 @@ npm install
 
 ### Iniciar Backend:
 
+```bash
 npm run dev
+```
 
 ## 2. Configurar Frontend
 
+```bash
 cd ../client
 npm install
+```
 
 ### Crear un archivo .env en la carpeta client:
 
@@ -188,7 +194,9 @@ npm install
 
 ### Iniciar Frontend:
 
+```bash
 npm run dev
+```
 
 # Autor
 
