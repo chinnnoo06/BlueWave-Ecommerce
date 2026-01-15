@@ -134,6 +134,62 @@ BlueWave es una **base sólida para un e-commerce real**, pensada para:
 
 ---
 
+# Instalación y configuración
+
+## Requisitos
+
+- Node.js 18+
+- MongoDB local o MongoDB Atlas
+- Cuenta de Stripe
+- Git
+
+---
+
+## 1. Clonar el repositorio
+
+```bash
+git clone https://github.com/tu-usuario/bluewave.git
+cd bluewave
+```
+
+---
+
+## 2. Configurar Backend
+
+cd server
+npm install
+
+### Crear un archivo .env en la carpeta server:
+
+- FRONTEND_URL=http://localhost:XXXX
+- BACKEND_URL=http://localhost:XXXX
+- SECRET_KEY=""
+- PORT=XXXX
+- GMAIL_USER=correo@ejemplo.com
+- GMAIL_APP_PASSWORD=xxxx
+- STRIPE_SECRET_KEY=sk_test_xxx
+- VITE_STRIPE_PUBLIC_KEY=pk_test_xxx
+
+### Iniciar Backend:
+
+npm run dev
+
+## 2. Configurar Frontend
+
+cd ../client
+npm install
+
+### Crear un archivo .env en la carpeta client:
+
+- VITE_API_URL = http://localhost:XXXX
+- VITE_PRODUCT_IMAGE_URL=http://localhost:XXXX/uploads/products/
+- VITE_CATEGORY_IMAGE_URL=http://localhost:XXXX/uploads/categories/
+- VITE_BLOG_IMAGE_URL=http://localhost:XXXX/uploads/blogs/
+
+### Iniciar Frontend:
+
+npm run dev
+
 # Autor
 
 Desarrollado por **Francisco Inda**  

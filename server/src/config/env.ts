@@ -5,7 +5,6 @@ export const SECRET_KEY = process.env.SECRET_KEY
 export const BACKEND_URL = process.env.BACKEND_URL!
 export const FRONTEND_URL = process.env.FRONTEND_URL!
 export const PORT = process.env.PORT!
-export const RESEND_API_KEY = process.env.RESEND_API_KEY!
 export const GMAIL_USER = process.env.GMAIL_USER!
 export const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD!
 export const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY!
