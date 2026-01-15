@@ -6,5 +6,3 @@ export type TCategory = {
     description: string,
     image: string
 }
-
-export type TCategoryId = { _id: Types.ObjectId };

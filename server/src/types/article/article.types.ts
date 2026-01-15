@@ -37,5 +37,3 @@ export type TArticle = {
     content: ArticleContentBlock[]
     seo: ArticleSEO
 }
-
-export type TArticleId = { _id: Types.ObjectId };

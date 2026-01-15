@@ -1,15 +1,15 @@
 import { Product } from "../../models/Product"
-import { TProductIdParams } from "../../types/params/params.types"
-import { TProduct, TProductId, TPromotion } from "../../types/product/product.types"
+import { TMongoId, TMongoIdParams } from "../../types/mongo/mongo.tpyes"
+import { TProduct, TPromotion } from "../../types/product/product.types"
 import { TUser } from "../../types/user/user.types"
 
 export const productRepository = {
 
-    async findById(id: TProductId['_id'] | string) {
+    async findById(id: TMongoId['_id'] | string) {
         return Product.findById(id)
     },
 
-    async getProductInLsCart(productId: TProductId['_id']) {
+    async getProductInLsCart(productId: TMongoId['_id']) {
         return Product.findById(productId)
             .populate({
                 path: "category",
@@ -77,7 +77,7 @@ export const productRepository = {
         ]);
     },
 
-    async getOneProduct(id: TProductIdParams['id']) {
+    async getOneProduct(id: TMongoIdParams['id']) {
         return Product.findById(id)
             .populate("category", "name")
             .lean()
@@ -93,19 +93,19 @@ export const productRepository = {
         return Product.create(data)
     },
 
-    async updatedProduct(productId: TProductIdParams['id'], data: TProduct) {
+    async updatedProduct(productId: TMongoIdParams['id'], data: TProduct) {
         return Product.findByIdAndUpdate(productId, data);
     },
 
-    async removeProduct(productId: TProductIdParams['id']) {
+    async removeProduct(productId: TMongoIdParams['id']) {
         return Product.findByIdAndDelete(productId);
     },
 
-    async addPromotion(productId: TProductIdParams['id'], data: TPromotion) {
+    async addPromotion(productId: TMongoIdParams['id'], data: TPromotion) {
         return Product.findByIdAndUpdate(productId, { promotion: data }, { new: true })
     },
 
-    async removePromotion(productId: TProductIdParams['id']) {
+    async removePromotion(productId: TMongoIdParams['id']) {
         return Product.findByIdAndUpdate(productId, {
             promotion: {
                 active: false,

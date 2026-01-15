@@ -1,14 +1,14 @@
 import path from "path"
 import fs from "fs";
+import slugify from "slugify";
 
 import { HttpError, shuffleWithSeed } from "../../helpers"
 import { productRepository } from "../../repositories/product/product.repository"
-import { TGetProducts, TProductIdParams, TSearchProducts } from "../../types/params/params.types"
-import { TColor, TProduct, TProductId, TPromotion } from "../../types/product/product.types"
-import { TUserId } from "../../types/user/user.types"
+import { TGetProducts, TSearchProducts } from "../../types/params/params.types"
+import { TColor, TProduct, TPromotion } from "../../types/product/product.types"
+import { TMongoId, TMongoIdParams } from "../../types/mongo/mongo.tpyes";
 import { validateCategoryByIdService, validateCategoryBySlugService } from "../category/category.service"
 import { getUserSearchesService, updateUserSearchesService } from "../user/user.service"
-import slugify from "slugify";
 
 export const getProductsService = async (data: TGetProducts) => {
   const itemsPerPage = 9;
@@ -66,7 +66,7 @@ export const getOneProductService = async (slugId: string) => {
   return productFormated
 }
 
-export const getSearchService = async (data: TSearchProducts, userId: TUserId['_id']) => {
+export const getSearchService = async (data: TSearchProducts, userId: TMongoId['_id']) => {
   const search = data.search || "";
   let page = parseInt(data.page);
   if (isNaN(page) || page < 1) page = 1;
@@ -191,7 +191,7 @@ export const addProductService = async (data: TProduct, files: Express.Multer.Fi
   return createdProduct
 }
 
-export const updateProductService = async (productId: TProductIdParams['id'], data: TProduct, files: Express.Multer.File[]) => {
+export const updateProductService = async (productId: TMongoIdParams['id'], data: TProduct, files: Express.Multer.File[]) => {
 
   let newColors: TColor[] = [];
   let oldColors: TColor[] = [];
@@ -277,7 +277,7 @@ export const updateProductService = async (productId: TProductIdParams['id'], da
 }
 
 
-export const removeProductService = async (productId: TProductIdParams['id']) => {
+export const removeProductService = async (productId: TMongoIdParams['id']) => {
   let colorsP: TColor[] = [];
 
   const productExist = await productRepository.removeProduct(productId)
@@ -306,7 +306,7 @@ export const removeProductService = async (productId: TProductIdParams['id']) =>
   }
 }
 
-export const addPromotionService = async (productId: TProductIdParams['id'], data: TPromotion) => {
+export const addPromotionService = async (productId: TMongoIdParams['id'], data: TPromotion) => {
   const product = await productRepository.addPromotion(productId, data)
 
   if (!product) throw new HttpError(404, "No existe el producto");
@@ -314,7 +314,7 @@ export const addPromotionService = async (productId: TProductIdParams['id'], dat
   return product
 }
 
-export const removePromotionService = async (productId: TProductIdParams['id']) => {
+export const removePromotionService = async (productId: TMongoIdParams['id']) => {
   const product = await productRepository.removePromotion(productId)
 
   if (!product) throw new HttpError(404, "No existe el producto");
@@ -322,10 +322,10 @@ export const removePromotionService = async (productId: TProductIdParams['id']) 
   return product
 }
 
-export const getProductInLsCartService = async (productId: TProductId['_id']) => {
+export const getProductInLsCartService = async (productId: TMongoId['_id']) => {
   return await  productRepository.getProductInLsCart(productId)
 }
 
-export const validateProductByIdService = async (productId: TProductId['_id']) => {
+export const validateProductByIdService = async (productId: TMongoId['_id']) => {
   return await productRepository.findById(productId)
 }

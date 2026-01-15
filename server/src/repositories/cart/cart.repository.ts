@@ -1,7 +1,7 @@
 import { Cart } from "../../models/Cart"
-import { TCart, TCartId, TCartItem } from "../../types/cart/cart.types"
+import { TCart, TCartItem } from "../../types/cart/cart.types"
+import { TMongoId } from "../../types/mongo/mongo.tpyes"
 import { TReqToCart } from "../../types/params/params.types"
-import { TUserId } from "../../types/user/user.types"
 import { Document } from "mongoose"
 
 type TCartDocument = Document & TCart
@@ -12,7 +12,7 @@ export const cartRepository = {
     return Cart.create(data)
   },
 
-  async findByUser(userId: TUserId['_id']) {
+  async findByUser(userId: TMongoId['_id']) {
     return Cart.findOne({ user: userId });
   },
 
@@ -20,7 +20,7 @@ export const cartRepository = {
     return cart.save()
   },
 
-  async updateProductInCart(userId: TUserId['_id'], delivery: number, newTotal: number, data: TReqToCart) {
+  async updateProductInCart(userId: TMongoId['_id'], delivery: number, newTotal: number, data: TReqToCart) {
     return Cart.findOneAndUpdate(
       { user: userId },
       {
@@ -39,14 +39,14 @@ export const cartRepository = {
     );
   },
 
-  async addProductInCart(userId: TUserId['_id'], cartItem: TCartItem, delivery: number, newTotal: number) {
+  async addProductInCart(userId: TMongoId['_id'], cartItem: TCartItem, delivery: number, newTotal: number) {
     return Cart.findOneAndUpdate(
       { user: userId },
       { $push: { items: cartItem }, $set: { delivery: delivery, total: newTotal } },
       { new: true });
   },
 
-  async decreaseProductInCart(userId: TUserId['_id'], delivery: number, newTotal: number, data: TReqToCart) {
+  async decreaseProductInCart(userId: TMongoId['_id'], delivery: number, newTotal: number, data: TReqToCart) {
     return Cart.findOneAndUpdate(
       { user: userId },
       {
@@ -65,7 +65,7 @@ export const cartRepository = {
     );
   },
 
-  async decreaseAndRemoveProductInCart(userId: TUserId['_id'], setUpdate: any, data: TReqToCart) {
+  async decreaseAndRemoveProductInCart(userId: TMongoId['_id'], setUpdate: any, data: TReqToCart) {
     return Cart.findOneAndUpdate(
       { user: userId },
       {
@@ -81,7 +81,7 @@ export const cartRepository = {
     );
   },
 
-  async removeProductInCart(userId: TUserId['_id'], setUpdate: any, data: TReqToCart) {
+  async removeProductInCart(userId: TMongoId['_id'], setUpdate: any, data: TReqToCart) {
     return Cart.findOneAndUpdate(
       { user: userId },
       {
@@ -97,7 +97,7 @@ export const cartRepository = {
     );
   },
 
-  async clearCart(userId: TUserId['_id']) {
+  async clearCart(userId: TMongoId['_id']) {
     return Cart.findOneAndUpdate({ user: userId }, {
       items: [],
       delivery: 50,
@@ -105,7 +105,7 @@ export const cartRepository = {
     }, { new: true });
   },
 
-  async getCart(userId: TUserId['_id']) {
+  async getCart(userId: TMongoId['_id']) {
     return Cart.findOne({ user: userId })
       .populate({
         path: "items.productId",
@@ -114,11 +114,11 @@ export const cartRepository = {
       .lean();
   },
 
-  async loadLsCart(userId: TUserId['_id'], data: TCart) {
+  async loadLsCart(userId: TMongoId['_id'], data: TCart) {
     return Cart.findOneAndUpdate({ user: userId }, data, { new: true })
   },
 
-  async cartResponse(cartId: TCartId['_id']) {
+  async cartResponse(cartId: TMongoId['_id']) {
     return Cart.findById(cartId)
       .populate({
         path: "items.productId",

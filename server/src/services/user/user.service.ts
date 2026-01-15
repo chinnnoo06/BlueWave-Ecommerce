@@ -2,14 +2,14 @@ import bcrypt from 'bcrypt'
 
 import { userRepository } from "../../repositories/user/user.repository"
 import { TUserUpdateInfo, TUserUpdatePassword } from "../../types/params/params.types"
-import { TAddress, TUserId } from "../../types/user/user.types"
-import { TProductId } from '../../types/product/product.types'
+import { TAddress } from "../../types/user/user.types"
 import { productRepository } from '../../repositories/product/product.repository'
 import { TContact } from '../../types/communication'
 import { sendContactEmail } from '../email/email.service'
 import { HttpError } from '../../helpers'
+import { TMongoId } from '../../types/mongo/mongo.tpyes'
 
-export const getProfileService = async (id: TUserId['_id']) => {
+export const getProfileService = async (id: TMongoId['_id']) => {
   const user = await userRepository.findById(id)
 
   if (!user) throw new HttpError(404, "No esta registrada esta cuenta")
@@ -17,7 +17,7 @@ export const getProfileService = async (id: TUserId['_id']) => {
   return user
 }
 
-export const updateUserInfoService = async (id: TUserId['_id'], data: TUserUpdateInfo) => {
+export const updateUserInfoService = async (id: TMongoId['_id'], data: TUserUpdateInfo) => {
   const user = await userRepository.updateUserInfo(id, data)
 
   if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
@@ -25,7 +25,7 @@ export const updateUserInfoService = async (id: TUserId['_id'], data: TUserUpdat
   return user
 }
 
-export const updateUserPasswordService = async (id: TUserId['_id'], data: TUserUpdatePassword) => {
+export const updateUserPasswordService = async (id: TMongoId['_id'], data: TUserUpdatePassword) => {
   const userExists = await userRepository.findById(id)
 
   if (!userExists) throw new HttpError(404, "No esta registrada esta cuenta");
@@ -43,7 +43,7 @@ export const updateUserPasswordService = async (id: TUserId['_id'], data: TUserU
   await userRepository.updateUserPassword(id, newPwd)
 }
 
-export const updateAddressService = async (id: TUserId['_id'], data: TAddress) => {
+export const updateAddressService = async (id: TMongoId['_id'], data: TAddress) => {
   const user = await userRepository.updateAddress(id, data)
 
   if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
@@ -51,7 +51,7 @@ export const updateAddressService = async (id: TUserId['_id'], data: TAddress) =
   return user
 }
 
-export const removeAddressService = async (id: TUserId['_id']) => {
+export const removeAddressService = async (id: TMongoId['_id']) => {
   const cleanedAddress: TAddress = {
     street: "",
     number: "",
@@ -67,7 +67,7 @@ export const removeAddressService = async (id: TUserId['_id']) => {
   return user
 }
 
-export const addFavoriteService = async (id: TUserId['_id'], idProduct: TProductId['_id']) => {
+export const addFavoriteService = async (id: TMongoId['_id'], idProduct: TMongoId['_id']) => {
   const productExist = await productRepository.findById(idProduct)
 
   if (!productExist) throw new HttpError(404, "Producto no encontrado");
@@ -77,7 +77,7 @@ export const addFavoriteService = async (id: TUserId['_id'], idProduct: TProduct
   if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 }
 
-export const removeFavoriteService = async (id: TUserId['_id'], idProduct: TProductId['_id']) => {
+export const removeFavoriteService = async (id: TMongoId['_id'], idProduct: TMongoId['_id']) => {
   const productExist = await productRepository.findById(idProduct)
 
   if (!productExist) throw new HttpError(404, "Producto no encontrado");
@@ -87,7 +87,7 @@ export const removeFavoriteService = async (id: TUserId['_id'], idProduct: TProd
   if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 }
 
-export const getFavoritesProductsService = async (id: TUserId['_id']) => {
+export const getFavoritesProductsService = async (id: TMongoId['_id']) => {
   const userExists = await userRepository.findById(id)
 
   if (!userExists) throw new HttpError(404, "No esta registrada esta cuenta");
@@ -103,11 +103,11 @@ export const contactEmailService = async (data: TContact) => {
   await sendContactEmail(data)
 }
 
-export const getUserSearchesService = async (userId: TUserId['_id'], search: string) => {
+export const getUserSearchesService = async (userId: TMongoId['_id'], search: string) => {
   await userRepository.getUserSearches(userId, search)
 } 
 
-export const updateUserSearchesService = async (userId: TUserId['_id'], search: string) => {
+export const updateUserSearchesService = async (userId: TMongoId['_id'], search: string) => {
   const userUpdated = await userRepository.updateUserSearches(userId, search)
 
   return userUpdated

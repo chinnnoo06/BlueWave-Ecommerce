@@ -3,8 +3,8 @@ import jwt from "jsonwebtoken";
 import colors from 'colors'
 
 import { TAddress, TUser, TUserLogged } from "../types/user/user.types";
-import { TLogin, TUserIdParams, TUserUpdateInfo, TUserUpdatePassword } from "../types/params/params.types";
-import { TProductId } from "../types/product/product.types";
+import { TLogin, TUserUpdateInfo, TUserUpdatePassword } from "../types/params/params.types";
+
 import { TContact } from "../types/communication";
 import { SECRET_KEY } from "../config/env";
 
@@ -12,7 +12,7 @@ import { successToken } from "../services/jwt/tokenUrl.service";
 import { createToken } from "../services/jwt/token.service";
 import { createCodeToRecoverPasswordService, forwardEmailService, loginService, registerUserService, saveNewPasswordService, validateCodeToRecoverPasswordService, verifyAccountService } from "../services/user/user.auth.service";
 import { addFavoriteService, contactEmailService, getFavoritesProductsService, getProfileService, removeAddressService, removeFavoriteService, updateAddressService, updateUserInfoService, updateUserPasswordService } from "../services/user/user.service";
-import { HttpError } from "../helpers";
+import { TMongoId, TMongoIdParams } from "../types/mongo/mongo.tpyes";
 
 export const registerUser = async (req: Request<{}, {}, TUser>, res: Response, next: NextFunction) => {
     const params = req.body;
@@ -51,7 +51,7 @@ export const forwardEmail = async (req: Request<{}, {}, TSendEmailReq>, res: Res
     }
 }
 
-export const verifyAccount = async (req: Request<TUserIdParams, {}, {}>, res: Response, next: NextFunction) => {
+export const verifyAccount = async (req: Request<TMongoIdParams, {}, {}>, res: Response, next: NextFunction) => {
     const { token } = req.query;
 
     try {
@@ -301,7 +301,7 @@ export const removeAddress = async (req: Request, res: Response, next: NextFunct
     }
 }
 
-export const addFavorite = async (req: Request<{}, {}, TProductId>, res: Response, next: NextFunction) => {
+export const addFavorite = async (req: Request<{}, {}, TMongoId>, res: Response, next: NextFunction) => {
     const params = req.body
     const id = req.user._id
 
@@ -319,7 +319,7 @@ export const addFavorite = async (req: Request<{}, {}, TProductId>, res: Respons
     }
 }
 
-export const removeFavorite = async (req: Request<{}, {}, TProductId>, res: Response, next: NextFunction) => {
+export const removeFavorite = async (req: Request<{}, {}, TMongoId>, res: Response, next: NextFunction) => {
     const params = req.body
     const id = req.user._id
 

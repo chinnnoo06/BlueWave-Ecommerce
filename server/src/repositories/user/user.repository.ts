@@ -1,7 +1,7 @@
 import { User } from "../../models/User"
+import { TMongoId } from "../../types/mongo/mongo.tpyes"
 import { TUserUpdateInfo } from "../../types/params/params.types"
-import { TProductId } from "../../types/product/product.types"
-import { TAddress, TUser, TUserId, TUserLogged } from "../../types/user/user.types"
+import { TAddress, TUser, TUserLogged } from "../../types/user/user.types"
 
 export const userRepository = {
 
@@ -17,37 +17,37 @@ export const userRepository = {
         return User.findById(id).select({ password: 0 })
     },
 
-    async updateUserInfo(userId: TUserId['_id'], data: TUserUpdateInfo) {
+    async updateUserInfo(userId: TMongoId['_id'], data: TUserUpdateInfo) {
         return User.findByIdAndUpdate(userId, data, { new: true }).select({ password: 0 })
     },
 
-    async updateUserPassword(userId: TUserId['_id'], newPwd: TUser['password']) {
+    async updateUserPassword(userId: TMongoId['_id'], newPwd: TUser['password']) {
         return User.findByIdAndUpdate(userId, { password: newPwd }, { new: true }).select({ password: 1 })
     },
 
-    async updateAddress(userId: TUserId['_id'], data: TAddress) {
+    async updateAddress(userId: TMongoId['_id'], data: TAddress) {
         return User.findByIdAndUpdate(userId, { address: data }, { new: true }).select({ password: 0 })
     },
 
-    async removeAddress(userId: TUserId['_id'], data: TAddress) {
+    async removeAddress(userId: TMongoId['_id'], data: TAddress) {
         return User.findByIdAndUpdate(userId, { address: data }, { new: true }).select({ password: 0 })
     },
 
-    async addFavorite(userId: TUserId['_id'], idProduct: TProductId['_id']) {
+    async addFavorite(userId: TMongoId['_id'], idProduct: TMongoId['_id']) {
         return User.findByIdAndUpdate(userId, { $addToSet: { favorites: idProduct } }, { new: true }).select({ password: 0 })
     },
 
-    async removeFavorite(userId: TUserId['_id'], idProduct: TProductId['_id']) {
+    async removeFavorite(userId: TMongoId['_id'], idProduct: TMongoId['_id']) {
         return User.findByIdAndUpdate(userId, { $pull: { favorites: idProduct } }, { new: true }).select({ password: 0 })
     },
 
-    async getUserSearches(userId: TUserId['_id'], search: string) {
+    async getUserSearches(userId: TMongoId['_id'], search: string) {
         User.findByIdAndUpdate(userId, {
             $pull: { searches: search }
         });
     },
 
-    async updateUserSearches(userId: TUserId['_id'], search: string) {
+    async updateUserSearches(userId: TMongoId['_id'], search: string) {
         return User.findByIdAndUpdate(userId, {
             $push: {
                 searches: {

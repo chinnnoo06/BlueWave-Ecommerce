@@ -1,7 +1,6 @@
 import { Subscriber } from "../../models/Subscriber"
 import { TSubscriber } from "../../types/communication"
 
-
 export const subscriberRepository = {
 
     async findByEmail(email: TSubscriber['email']) {

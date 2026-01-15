@@ -1,11 +1,11 @@
 import { TPurchaseItem } from "../../types/purchase/purchase.types";
 import { getProductInLsCartService, validateProductByIdService } from "../product/product.service";
-import { TUserId } from "../../types/user/user.types";
 import { cartRepository } from "../../repositories/cart/cart.repository";
 import { TReqToCart } from "../../types/params/params.types";
 import { HttpError } from "../../helpers";
 import { TCartItem, TCartLSBody } from "../../types/cart/cart.types";
 import { buildCartResponse } from "./cart.mapper";
+import { TMongoId } from "../../types/mongo/mongo.tpyes";
 
 type TProductInCart = {
   exist: boolean,
@@ -13,7 +13,7 @@ type TProductInCart = {
   price: number
 }
 
-export const validateCartInternalService = async (userId: TUserId['_id']) => {
+export const validateCartInternalService = async (userId: TMongoId['_id']) => {
   const cart = await cartRepository.findByUser(userId)
 
   if (!cart || cart.items.length === 0) {
@@ -111,7 +111,7 @@ export const validateCartInternalService = async (userId: TUserId['_id']) => {
 }
 
 
-export const createCartService = async (userId: TUserId['_id']) => {
+export const createCartService = async (userId: TMongoId['_id']) => {
   await cartRepository.create({
     user: userId,
     items: [],
@@ -119,7 +119,7 @@ export const createCartService = async (userId: TUserId['_id']) => {
   })
 }
 
-export const addToCartService = async (userId: TUserId['_id'], data: TReqToCart) => {
+export const addToCartService = async (userId: TMongoId['_id'], data: TReqToCart) => {
 
   const productExist = await validateProductByIdService(data.productId)
   const maxIndex = productExist.colors.length - 1;
@@ -185,7 +185,7 @@ export const addToCartService = async (userId: TUserId['_id'], data: TReqToCart)
 }
 
 
-export const decreaseToCartService = async (userId: TUserId['_id'], data: TReqToCart) => {
+export const decreaseToCartService = async (userId: TMongoId['_id'], data: TReqToCart) => {
 
   const productExist = await validateProductByIdService(data.productId)
   const maxIndex = productExist.colors.length - 1;
@@ -230,7 +230,7 @@ export const decreaseToCartService = async (userId: TUserId['_id'], data: TReqTo
   return cartResponse
 }
 
-export const removeItemCartService = async (userId: TUserId['_id'], data: TReqToCart) => {
+export const removeItemCartService = async (userId: TMongoId['_id'], data: TReqToCart) => {
   const productExist = await validateProductByIdService(data.productId)
   const maxIndex = productExist.colors.length - 1;
 
@@ -270,7 +270,7 @@ export const removeItemCartService = async (userId: TUserId['_id'], data: TReqTo
   return cartResponse
 }
 
-export const clearCartService = async (userId: TUserId['_id']) => {
+export const clearCartService = async (userId: TMongoId['_id']) => {
   const cart = await cartRepository.clearCart(userId)
 
   if (!cart) {
@@ -280,7 +280,7 @@ export const clearCartService = async (userId: TUserId['_id']) => {
   return cart
 }
 
-export const getCartService = async (userId: TUserId['_id']) => {
+export const getCartService = async (userId: TMongoId['_id']) => {
   const cart = await cartRepository.getCart(userId)
 
   if (!cart) {
@@ -338,7 +338,7 @@ export const getLsCartService = async (data: TCartLSBody) => {
   return responseItems
 }
 
-export const loadLSCardService = async (userId: TUserId['_id'], data: TCartLSBody) => {
+export const loadLSCardService = async (userId: TMongoId['_id'], data: TCartLSBody) => {
   const { items } = data
 
   if (!items || !Array.isArray(items)) {

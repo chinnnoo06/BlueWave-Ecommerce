@@ -1,13 +1,6 @@
 import { TCartItem } from "../cart/cart.types";
+import { TMongoIdParams } from "../mongo/mongo.tpyes";
 import { TUser } from "../user/user.types";
-
-export type TUserIdParams = { id: string };
-
-export type TProductIdParams = { id: string };
-
-export type TCategoryIdParams = { id: string };
-
-export type TArticleIdParams = { id: string };
 
 export type TUserUpdateInfo = Omit<TUser, "password" | "address" | "favorites">;
 
@@ -19,7 +12,7 @@ export type TUserUpdatePassword = {
 }
 
 export type TGetProducts = {
-    category: TCategoryIdParams['id'],
+    category: TMongoIdParams['id'],
     page: string
 }
 

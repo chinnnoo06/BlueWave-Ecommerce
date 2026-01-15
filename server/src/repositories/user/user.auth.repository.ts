@@ -1,6 +1,6 @@
 import { User } from "../../models/User"
-import { TUser, TUserId } from "../../types/user/user.types"
-
+import { TMongoId } from "../../types/mongo/mongo.tpyes"
+import { TUser } from "../../types/user/user.types"
 
 export const userAuthRepository = {
 
@@ -8,7 +8,7 @@ export const userAuthRepository = {
         return User.create(data)
     },
 
-    async setVerificationToken(userId: TUserId['_id'], token: string, expires: Date) {
+    async setVerificationToken(userId: TMongoId['_id'], token: string, expires: Date) {
         return User.findByIdAndUpdate(userId, {
             verificationToken: token,
             verificationTokenExpires: expires
@@ -22,7 +22,7 @@ export const userAuthRepository = {
         });
     },
 
-    async verifyAccount(userId: TUserId['_id']) {
+    async verifyAccount(userId: TMongoId['_id']) {
         return User.findByIdAndUpdate(userId, {
             isVerified: true,
             verificationToken: undefined,
@@ -30,7 +30,7 @@ export const userAuthRepository = {
         })
     },
 
-    async setRecoverPasswordCode(userId: TUserId['_id'], code: string, expires: Date) {
+    async setRecoverPasswordCode(userId: TMongoId['_id'], code: string, expires: Date) {
         return User.findByIdAndUpdate(userId, {
             codeToRecoverPassword: code,
             verificationCodeExpires: expires,
@@ -38,7 +38,7 @@ export const userAuthRepository = {
         })
     },
 
-    async cleanRecoverPasswordCode(userId: TUserId['_id']) {
+    async cleanRecoverPasswordCode(userId: TMongoId['_id']) {
         return User.findByIdAndUpdate(userId, {
             codeToRecoverPassword: undefined,
             verificationCodeExpires: undefined,
@@ -46,7 +46,7 @@ export const userAuthRepository = {
         })
     },
 
-    async saveNewPassword(userId: TUserId['_id'], newPassword: TUser['password']) {
+    async saveNewPassword(userId: TMongoId['_id'], newPassword: TUser['password']) {
         return User.findByIdAndUpdate(userId, {
             password: newPassword,
             canUpdatePassword: false

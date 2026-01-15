@@ -1,9 +1,9 @@
 import { Purchase } from "../../models/Purchase"
+import { TMongoId } from "../../types/mongo/mongo.tpyes";
 import { TPurchase } from "../../types/purchase/purchase.types";
-import { TUserId } from "../../types/user/user.types"
 
 export const purchaseRepository = {
-    async getPurchases(userId: TUserId['_id']) {
+    async getPurchases(userId: TMongoId['_id']) {
         return await Purchase.find({ user: userId });
     },
 

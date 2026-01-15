@@ -142,11 +142,18 @@ export const ProfilePurchaseCard = ({ purchase, index, length }: TProfilePurchas
                             Pagado con tarjeta
                         </p>
                     </div>
-                    {purchase.total > 499 && (
+                    {purchase.total > 499 ? (
                         <div className="flex gap-2 items-center">
                             <Truck size={16} className="text-[#0C71E4]" />
                             <p className="text-xs lg:text-sm text-[#001F3F] font-medium">
                                 Enviado Gratis
+                            </p>
+                        </div>
+                    ) : (
+                        <div className="flex gap-2 items-center">
+                            <Truck size={16} className="text-[#0C71E4]" />
+                            <p className="text-xs lg:text-sm text-[#001F3F] font-medium">
+                                  MXN {(50).toFixed(2)}
                             </p>
                         </div>
                     )}

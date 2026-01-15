@@ -3,11 +3,11 @@ import path from "path"
 import fs from "fs";
 import colors from "colors";
 
-import { categoryRepository } from "../../repositories/category/category.repository"
-import { TCategory, TCategoryId } from "../../types/category/category.types"
-import { TCategoryIdParams } from "../../types/params/params.types";
-import { Category } from "../../models/Category";
+import { TCategory } from "../../types/category/category.types"
+import { TMongoId, TMongoIdParams } from "../../types/mongo/mongo.tpyes";
+
 import { HttpError } from "../../helpers";
+import { categoryRepository } from "../../repositories/category/category.repository"
 
 export const getCategoriesService = async () => {
   const categories = await categoryRepository.getCategories()
@@ -40,7 +40,7 @@ export const addCategoryService = async (data: TCategory, file: Express.Multer.F
   return category
 }
 
-export const removeCategoryService = async (categoryId: TCategoryIdParams['id']) => {
+export const removeCategoryService = async (categoryId: TMongoIdParams['id']) => {
   const categoryExist = await categoryRepository.removeCategory(categoryId)
 
   if (!categoryExist) throw new HttpError(404, "No existe la categoría");
@@ -58,7 +58,7 @@ export const removeCategoryService = async (categoryId: TCategoryIdParams['id'])
   }
 }
 
-export const updateCategoryService = async (categoryId: TCategoryIdParams['id'], data: TCategory, file?: Express.Multer.File) => {
+export const updateCategoryService = async (categoryId: TMongoIdParams['id'], data: TCategory, file?: Express.Multer.File) => {
   const categoryExist = await categoryRepository.findById(categoryId);
   if (!categoryExist) throw new Error('No existe la categoria');
 
@@ -114,6 +114,6 @@ export const validateCategoryBySlugService = async (slug: TCategory['slug']) => 
   return await categoryRepository.findBySlug(slug)
 }
 
-export const validateCategoryByIdService = async (categoryId: TCategoryId['_id']) => {
+export const validateCategoryByIdService = async (categoryId: TMongoId['_id']) => {
   return await categoryRepository.findById(categoryId)
 }

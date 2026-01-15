@@ -24,5 +24,3 @@ export type TCartLSItem = {
 export type TCartLSBody = {
     items: TCartLSItem[]
 }
-
-export type TCartId = { _id: Types.ObjectId };

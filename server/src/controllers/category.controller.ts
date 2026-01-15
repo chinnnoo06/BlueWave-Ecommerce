@@ -2,8 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import colors from 'colors'
 
 import { TCategory } from "../types/category/category.types";
-import { TCategoryIdParams } from "../types/params/params.types";
 import { addCategoryService, getCategoriesService, removeCategoryService, updateCategoryService } from "../services/category/category.service";
+import { TMongoIdParams } from "../types/mongo/mongo.tpyes";
 
 export const getCategories = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -40,7 +40,7 @@ export const addCategory = async (req: Request<{}, {}, TCategory>, res: Response
 
 }
 
-export const removeCategory = async (req: Request<TCategoryIdParams, {}, {}>, res: Response, next: NextFunction) => {
+export const removeCategory = async (req: Request<TMongoIdParams, {}, {}>, res: Response, next: NextFunction) => {
     const id = req.params.id
 
     try {
@@ -56,7 +56,7 @@ export const removeCategory = async (req: Request<TCategoryIdParams, {}, {}>, re
     }
 }
 
-export const updateCategory = async (req: Request<TCategoryIdParams, {}, TCategory>, res: Response, next: NextFunction) => {
+export const updateCategory = async (req: Request<TMongoIdParams, {}, TCategory>, res: Response, next: NextFunction) => {
     const params = req.body
     const urlParams = req.params
 

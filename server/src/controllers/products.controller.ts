@@ -1,10 +1,11 @@
 import { NextFunction, Request, Response } from "express"
 import colors from 'colors'
 
-import { TGetProducts, TProductIdParams, TSearchProducts } from "../types/params/params.types";
+import { TGetProducts, TSearchProducts } from "../types/params/params.types";
+import { TMongoIdParams } from "../types/mongo/mongo.tpyes";
+import { TProduct, TPromotion } from "../types/product/product.types";
 
 import { addProductService, addPromotionService, getCarouselProductsService, getOneProductService, getProductsService, getSearchService, removeProductService, removePromotionService, updateProductService } from "../services/product/product.service";
-import { TProduct, TPromotion } from "../types/product/product.types";
 
 export const getProducts = async (req: Request<TGetProducts, {}, {}>, res: Response, next: NextFunction) => {
     const params = req.params
@@ -116,7 +117,7 @@ export const addProduct = async (req: Request<{}, {}, TProduct>, res: Response, 
     }
 }
 
-export const updateProduct = async (req: Request<TProductIdParams, {}, TProduct>, res: Response, next: NextFunction) => {
+export const updateProduct = async (req: Request<TMongoIdParams, {}, TProduct>, res: Response, next: NextFunction) => {
     const id = req.params.id
     const params = req.body
 
@@ -136,7 +137,7 @@ export const updateProduct = async (req: Request<TProductIdParams, {}, TProduct>
     }
 }
 
-export const removeProduct = async (req: Request<TProductIdParams, {}, {}>, res: Response, next: NextFunction) => {
+export const removeProduct = async (req: Request<TMongoIdParams, {}, {}>, res: Response, next: NextFunction) => {
     let id = req.params.id
 
     try {
@@ -152,7 +153,7 @@ export const removeProduct = async (req: Request<TProductIdParams, {}, {}>, res:
     }
 }
 
-export const addPromotion = async (req: Request<TProductIdParams, {}, TPromotion>, res: Response, next: NextFunction) => {
+export const addPromotion = async (req: Request<TMongoIdParams, {}, TPromotion>, res: Response, next: NextFunction) => {
     const params = req.body
     const id = req.params.id
 
@@ -170,7 +171,7 @@ export const addPromotion = async (req: Request<TProductIdParams, {}, TPromotion
     }
 }
 
-export const removePromotion = async (req: Request<TProductIdParams, {}, {}>, res: Response, next: NextFunction) => {
+export const removePromotion = async (req: Request<TMongoIdParams, {}, {}>, res: Response, next: NextFunction) => {
     const id = req.params.id
 
     try {

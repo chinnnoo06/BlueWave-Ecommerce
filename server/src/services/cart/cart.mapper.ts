@@ -1,10 +1,9 @@
 import { HttpError } from "../../helpers";
-import { Cart } from "../../models/Cart";
 import { cartRepository } from "../../repositories/cart/cart.repository";
-import { TCartId } from "../../types/cart/cart.types";
+import { TMongoId } from "../../types/mongo/mongo.tpyes";
 import { TProductwithID } from "../../types/product/product.types";
 
-export const buildCartResponse = async (cartId: TCartId['_id']) => {
+export const buildCartResponse = async (cartId: TMongoId['_id']) => {
   const cart = await cartRepository.cartResponse(cartId)
 
   if (!cart) throw new HttpError(404, "Cart no encontrado");

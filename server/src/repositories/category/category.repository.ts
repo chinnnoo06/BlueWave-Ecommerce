@@ -1,10 +1,10 @@
 import { Category } from "../../models/Category"
-import { TCategory, TCategoryId } from "../../types/category/category.types"
-import { TCategoryIdParams } from "../../types/params/params.types"
+import { TCategory } from "../../types/category/category.types"
+import { TMongoId, TMongoIdParams } from "../../types/mongo/mongo.tpyes"
 
 export const categoryRepository = {
 
-    async findById(categoryId: TCategoryId['_id'] | string) {
+    async findById(categoryId: TMongoId['_id'] | string) {
         return Category.findById(categoryId)
     },
 
@@ -20,11 +20,11 @@ export const categoryRepository = {
         return Category.create(data)
     },
 
-    async removeCategory(categoryId: TCategoryIdParams['id']) {
+    async removeCategory(categoryId: TMongoIdParams['id']) {
         return Category.findByIdAndDelete(categoryId);
     },
 
-    async updateCategory(categoryId: TCategoryIdParams['id'], data: TCategory) {
+    async updateCategory(categoryId: TMongoIdParams['id'], data: TCategory) {
         return Category.findByIdAndUpdate(categoryId, data, { new: true })
     },
 }

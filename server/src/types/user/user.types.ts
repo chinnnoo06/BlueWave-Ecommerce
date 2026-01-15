@@ -28,4 +28,3 @@ export type TUser = {
 
 export type TUserLogged = Pick<TUser, "role"> & { _id: Types.ObjectId }
 
-export type TUserId = { _id: Types.ObjectId };
