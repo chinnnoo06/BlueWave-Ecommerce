@@ -148,7 +148,7 @@ BlueWave es una **base sólida para un e-commerce real**, pensada para:
 ## 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/bluewave.git
+git clone https://github.com/chinnnoo06/BlueWave-Ecommerce.git
 cd bluewave
 ```
 
