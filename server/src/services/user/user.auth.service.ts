@@ -9,9 +9,9 @@ import { TLogin } from '../../types/params/params.types';
 import { generate6DigitCode, HttpError } from '../../helpers';
 
 export const registerUserService = async (data: TUser) => {
-    const userExists = await userRepository.findByEmail(data.email)
+    const userExist = await userRepository.findByEmail(data.email)
 
-    if (userExists) throw new HttpError(409, "Ese correo ya está registrado");
+    if (userExist) throw new HttpError(409, "Ese correo ya está registrado");
 
     const pwd = await bcrypt.hash(data.password, 10);
 
@@ -32,18 +32,21 @@ export const registerUserService = async (data: TUser) => {
 }
 
 export const forwardEmailService = async (email: TUser['email']) => {
-    const userExists = await userRepository.findByEmail(email)
+    const user = await userRepository.findByEmail(email)
 
-    if (!userExists) throw new HttpError(404, "No esta registrada esta cuenta");
+    if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 
-    if (userExists.isVerified) throw new HttpError(409, "La cuenta ya fue verificada");
+    if (user.isVerified) throw new HttpError(409, "La cuenta ya fue verificada");
 
     const verificationToken = crypto.randomBytes(32).toString("hex");
     const expires = new Date(Date.now() + 1000 * 60 * 60)
 
-    await userAuthRepository.setVerificationToken(userExists._id, verificationToken, expires)
+    user.verificationToken = verificationToken
+    user.verificationTokenExpires = expires
 
-    await sendVerificationEmail(userExists.email, verificationToken);
+    userRepository.save(user)
+
+    await sendVerificationEmail(user.email, verificationToken);
 }
 
 export const verifyAccountService = async (token: string) => {
@@ -52,79 +55,90 @@ export const verifyAccountService = async (token: string) => {
 
     if (!userValidToken) throw new HttpError(401, "Token invalido o expirado");
 
-    await userAuthRepository.verifyAccount(userValidToken._id)
+    userValidToken.isVerified = true,
+        userValidToken.verificationToken = undefined
+    userValidToken.verificationTokenExpires = undefined
+
+    userRepository.save(userValidToken)
 
     return userValidToken._id
 }
 
 export const loginService = async (data: TLogin) => {
-    const userExists = await userRepository.findByEmail(data.email)
+    const user = await userRepository.findByEmail(data.email)
 
-    if (!userExists) throw new HttpError(401, "Usuario o contraseña incorrectos");
+    if (!user) throw new HttpError(401, "Usuario o contraseña incorrectos");
 
-    let pwd = bcrypt.compareSync(data.password, userExists.password)
+    let pwd = bcrypt.compareSync(data.password, user.password)
 
     if (!pwd) throw new HttpError(401, "Usuario o contraseña incorrectos");
 
-    if (!userExists.isVerified) {
+    if (!user.isVerified) {
         return {
             status: "unverified",
-            email: userExists.email
+            email: user.email
         };
     }
 
     return {
         status: "success",
-        user: userExists
+        user: user
     }
 };
 
-
 export const createCodeToRecoverPasswordService = async (email: TUser['email']) => {
-    const userExists = await userRepository.findByEmail(email)
+    const user = await userRepository.findByEmail(email)
 
-    if (!userExists) throw new HttpError(404, "No esta registrada esta cuenta");
+    if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 
     const verificationCode = generate6DigitCode()
     const hashedCode = await bcrypt.hash(verificationCode, 10);
     const expires = new Date(Date.now() + 1000 * 60 * 15)
 
-    await userAuthRepository.setRecoverPasswordCode(userExists._id, hashedCode, expires)
+    user.codeToRecoverPassword = hashedCode
+    user.verificationCodeExpires = expires
+    user.canUpdatePassword = false
 
-    await sendCodeToRecoverPasswordEmail(userExists.email, verificationCode);
+    await userRepository.save(user)
 
+    await sendCodeToRecoverPasswordEmail(user.email, verificationCode);
 }
 
-
 export const validateCodeToRecoverPasswordService = async (email: TUser['email'], code: string) => {
-    const userExists = await userRepository.findByEmail(email)
+    const user = await userRepository.findByEmail(email)
 
-    if (!userExists) throw new HttpError(404, "No esta registrada esta cuenta");
+    if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 
-    if (!userExists.verificationCodeExpires || userExists.verificationCodeExpires <= new Date()) throw new Error('El código ha expirado')
+    if (!user.verificationCodeExpires || user.verificationCodeExpires <= new Date()) throw new Error('El código ha expirado')
 
-    const compareCode = bcrypt.compareSync(code, userExists.codeToRecoverPassword)
+    const compareCode = bcrypt.compareSync(code, user.codeToRecoverPassword)
 
     if (!compareCode) throw new HttpError(401, "Código incorrecto");
 
-    await userAuthRepository.cleanRecoverPasswordCode(userExists._id)
+    user.codeToRecoverPassword = undefined
+    user.verificationCodeExpires = undefined
+    user.canUpdatePassword = true
+
+    await userRepository.save(user)
 }
 
-
 export const saveNewPasswordService = async (email: TUser['email'], newPassword: TUser['password']) => {
-    const userExists = await userRepository.findByEmail(email)
+    const user = await userRepository.findByEmail(email)
 
-    if (!userExists) throw new HttpError(404, "No esta registrada esta cuenta");
+    if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 
-    if (!userExists.canUpdatePassword) throw new HttpError(403, "No autorizado para cambiar la contraseña");
+    if (!user.canUpdatePassword) throw new HttpError(403, "No autorizado para cambiar la contraseña");
 
-    const verifyPwd = bcrypt.compareSync(newPassword, userExists.password)
+    const verifyPwd = bcrypt.compareSync(newPassword, user.password)
 
     if (verifyPwd) throw new HttpError(400, 'La contraseña nueva no puede ser igual que la anterior')
 
     const pwd = await bcrypt.hash(newPassword, 10);
 
-    await userAuthRepository.saveNewPassword(userExists._id, pwd)
+    user.password = pwd
+    user.canUpdatePassword = false
 
-    return userExists._id
+    await userRepository.save(user)
+
+    return user._id
 }

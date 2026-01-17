@@ -9,49 +9,64 @@ import { sendContactEmail } from '../email/email.service'
 import { HttpError } from '../../helpers'
 import { TMongoId } from '../../types/mongo/mongo.tpyes'
 
-export const getProfileService = async (id: TMongoId['_id']) => {
-  const user = await userRepository.findById(id)
+export const getProfileService = async (idUser: TMongoId['_id']) => {
+  const user = await userRepository.findById(idUser)
 
   if (!user) throw new HttpError(404, "No esta registrada esta cuenta")
 
   return user
 }
 
-export const updateUserInfoService = async (id: TMongoId['_id'], data: TUserUpdateInfo) => {
-  const user = await userRepository.updateUserInfo(id, data)
+export const updateUserInfoService = async (idUser: TMongoId['_id'], data: TUserUpdateInfo) => {
+  const user = await userRepository.findById(idUser)
 
-  if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta")
+
+  user.name = data.name
+  user.surname = data.surname
+  user.email = data.email
+  user.phone = data.phone
+
+  await userRepository.save(user)
 
   return user
 }
 
-export const updateUserPasswordService = async (id: TMongoId['_id'], data: TUserUpdatePassword) => {
-  const userExists = await userRepository.findById(id)
+export const updateUserPasswordService = async (idUser: TMongoId['_id'], data: TUserUpdatePassword) => {
+  const user = await userRepository.findById(idUser, true)
 
-  if (!userExists) throw new HttpError(404, "No esta registrada esta cuenta");
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 
-  const pwd = bcrypt.compareSync(data.oldPassword, userExists.password)
+  const pwd = bcrypt.compareSync(data.oldPassword, user.password)
 
   if (!pwd) throw new HttpError(401, 'Contraseña Incorrecta')
 
-  const verifyNewPwd = bcrypt.compareSync(data.newPassword, userExists.password)
+  const verifyNewPwd = bcrypt.compareSync(data.newPassword, user.password)
 
   if (verifyNewPwd) throw new HttpError(400, 'La contraseña nueva no puede ser igual que la anterior')
 
   const newPwd = await bcrypt.hash(data.newPassword, 10);
 
-  await userRepository.updateUserPassword(id, newPwd)
+  user.password = newPwd
+
+  await userRepository.save(user)
 }
 
-export const updateAddressService = async (id: TMongoId['_id'], data: TAddress) => {
-  const user = await userRepository.updateAddress(id, data)
+export const updateAddressService = async (idUser: TMongoId['_id'], data: TAddress) => {
+  const user = await userRepository.findById(idUser)
 
-  if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta")
 
-  return user
+  user.address = data
+
+
 }
 
-export const removeAddressService = async (id: TMongoId['_id']) => {
+export const removeAddressService = async (idUser: TMongoId['_id']) => {
+  const user = await userRepository.findById(idUser)
+
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta")
+
   const cleanedAddress: TAddress = {
     street: "",
     number: "",
@@ -60,39 +75,51 @@ export const removeAddressService = async (id: TMongoId['_id']) => {
     postalCode: "",
   }
 
-  const user = await userRepository.removeAddress(id, cleanedAddress)
+  user.address = cleanedAddress
 
-  if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
+  await userRepository.save(user)
 
   return user
 }
 
-export const addFavoriteService = async (id: TMongoId['_id'], idProduct: TMongoId['_id']) => {
+export const addFavoriteService = async (idUser: TMongoId['_id'], idProduct: TMongoId['_id']) => {
   const productExist = await productRepository.findById(idProduct)
 
   if (!productExist) throw new HttpError(404, "Producto no encontrado");
 
-  const user = await userRepository.addFavorite(id, idProduct)
+  const user = await userRepository.findById(idUser)
 
-  if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta")
+
+  const alredyExist = user.favorites.some(fav => fav.toString() === idProduct.toString())
+
+  if (alredyExist) return
+
+  user.favorites.push(idProduct)
+
+  await userRepository.save(user)
 }
 
-export const removeFavoriteService = async (id: TMongoId['_id'], idProduct: TMongoId['_id']) => {
+export const removeFavoriteService = async (idUser: TMongoId['_id'], idProduct: TMongoId['_id']) => {
   const productExist = await productRepository.findById(idProduct)
 
   if (!productExist) throw new HttpError(404, "Producto no encontrado");
 
-  const user = await userRepository.removeFavorite(id, idProduct)
+  const user = await userRepository.findById(idUser)
 
-  if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta")
+
+  user.favorites = user.favorites.filter(fav => fav.toString() !== idProduct.toString())
+
+  await userRepository.save(user)
 }
 
-export const getFavoritesProductsService = async (id: TMongoId['_id']) => {
-  const userExists = await userRepository.findById(id)
+export const getFavoritesProductsService = async (idUser: TMongoId['_id']) => {
+  const user = await userRepository.findById(idUser)
 
-  if (!userExists) throw new HttpError(404, "No esta registrada esta cuenta");
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 
-  const favoritesIds = userExists.favorites
+  const favoritesIds = user.favorites
 
   const products = await productRepository.getFavoriteProducts(favoritesIds)
 
@@ -104,11 +131,18 @@ export const contactEmailService = async (data: TContact) => {
 }
 
 export const getUserSearchesService = async (userId: TMongoId['_id'], search: string) => {
-  await userRepository.getUserSearches(userId, search)
-} 
+  const user = await userRepository.findById(userId)
 
-export const updateUserSearchesService = async (userId: TMongoId['_id'], search: string) => {
-  const userUpdated = await userRepository.updateUserSearches(userId, search)
+  if (!user) throw new HttpError(404, "No esta registrada esta cuenta");
 
-  return userUpdated
-} 
+  const alredyExist = user.searches.some( searchUser => searchUser === search )
+
+  if (alredyExist) return
+
+  user.searches.push(search)
+  user.searches = user.searches.slice(-5)
+
+  await userRepository.save(user)
+
+  return user.searches
+}

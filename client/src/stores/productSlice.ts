@@ -66,15 +66,24 @@ export const createProductSlice: StateCreator<TProductSlice & TUserSlice, [], []
         const response = await getProductsBySearch(search, page)
 
         if (response) {
-            set({
-                products: response.products,
-                pagination: {
-                    total: response.total,
-                    page: response.page,
-                    itemsPerPage: response.itemsPerPage,
-                    pages: response.pages,
+            set((state) => {
+                if (!state.user) return state
+
+                return {
+                    products: response.products,
+                    pagination: {
+                        total: response.total,
+                        page: response.page,
+                        itemsPerPage: response.itemsPerPage,
+                        pages: response.pages,
+                    },
+                    user: {
+                        ...state.user,
+                        searches: response.userSearches ?? state.user.searches ?? []
+                    }
                 }
             })
+
         }
     },
 

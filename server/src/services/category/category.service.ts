@@ -41,39 +41,41 @@ export const addCategoryService = async (data: TCategory, file: Express.Multer.F
 }
 
 export const removeCategoryService = async (categoryId: TMongoIdParams['id']) => {
-  const categoryExist = await categoryRepository.removeCategory(categoryId)
+  const category = await categoryRepository.findById(categoryId)
 
-  if (!categoryExist) throw new HttpError(404, "No existe la categoría");
+  if (!category) throw new HttpError(404, "No existe la categoría");
 
-  if (categoryExist.image) {
-    const filePath = path.join(__dirname, "../../uploads/categories", categoryExist.image)
+  if (category.image) {
+    const filePath = path.join(__dirname, "../../uploads/categories", category.image)
 
     try {
       await fs.promises.unlink(filePath);
-      console.log(`Imagen eliminada: ${categoryExist.image}`);
+      console.log(`Imagen eliminada: ${category.image}`);
     } catch (err) {
-      console.error(`Error eliminando ${categoryExist.image}: ${err}`);
-      throw new HttpError(500, `Error eliminando ${categoryExist.image}: ${err}`);
+      console.error(`Error eliminando ${category.image}: ${err}`);
+      throw new HttpError(500, `Error eliminando ${category.image}: ${err}`);
     }
   }
+
+  await categoryRepository.deleteOne(category)
 }
 
 export const updateCategoryService = async (categoryId: TMongoIdParams['id'], data: TCategory, file?: Express.Multer.File) => {
-  const categoryExist = await categoryRepository.findById(categoryId);
-  if (!categoryExist) throw new Error('No existe la categoria');
+  const category = await categoryRepository.findById(categoryId);
+  if (!category) throw new Error('No existe la categoria');
 
   const sanitized = data.name.replace(/[^a-z0-9]/gi, "_").toLowerCase();
 
-  let newImage = categoryExist.image;
+  let newImage = category.image;
   const uploadDir = path.join(__dirname, "../../uploads/categories");
 
   if (file) { // si hay imagen nueva
-    if (data.name !== categoryExist.name && categoryExist.image) {
-      const filePath = path.join(uploadDir, categoryExist.image);
+    if (data.name !== category.name && category.image) {
+      const filePath = path.join(uploadDir, category.image);
 
       try {
         await fs.promises.unlink(filePath);
-        console.log(colors.green(`Imagen eliminada: ${categoryExist.image}`));
+        console.log(colors.green(`Imagen eliminada: ${category.image}`));
       } catch (err: any) {
         throw new HttpError(500, `No se pudo eliminar la imagen anterior: ${err.message}`);
       }
@@ -82,8 +84,8 @@ export const updateCategoryService = async (categoryId: TMongoIdParams['id'], da
     newImage = file.filename;
 
   } else { // sin imagen nueva
-    if (data.name !== categoryExist.name && categoryExist.image) {
-      const oldPath = path.join(uploadDir, categoryExist.image);
+    if (data.name !== category.name && category.image) {
+      const oldPath = path.join(uploadDir, category.image);
       const newPath = path.join(uploadDir, `category-${sanitized}.webp`);
 
 
@@ -99,15 +101,14 @@ export const updateCategoryService = async (categoryId: TMongoIdParams['id'], da
     }
   }
 
-  const objCategory: TCategory = {
-    slug: data.slug,
-    name: data.name,
-    description: data.description,
-    image: newImage
-  };
+  category.slug = data.slug
+  category.name = data.name
+  category.description = data.description,
+  category.image = newImage
 
-  const updatedCategory = await categoryRepository.updateCategory(categoryId, objCategory);
-  return updatedCategory;
+  await categoryRepository.save(category)
+  
+  return category;
 }
 
 export const validateCategoryBySlugService = async (slug: TCategory['slug']) => {

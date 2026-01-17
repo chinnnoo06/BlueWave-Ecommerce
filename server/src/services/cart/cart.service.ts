@@ -131,6 +131,7 @@ export const addToCartService = async (userId: TMongoId['_id'], data: TReqToCart
   if (!actualCart) throw new HttpError(404, "No existe el card");
 
   const productInCart: TProductInCart = { exist: false, quantity: 1, price: 0 }
+  let indexExist: null | number = null
 
   for (let i = 0; i < actualCart.items.length; i++) {
 
@@ -138,6 +139,7 @@ export const addToCartService = async (userId: TMongoId['_id'], data: TReqToCart
       productInCart.exist = true
       productInCart.quantity = actualCart.items[i].quantity
       productInCart.price = actualCart.items[i].price
+      indexExist = i
     }
   }
 
@@ -146,13 +148,14 @@ export const addToCartService = async (userId: TMongoId['_id'], data: TReqToCart
 
   if (productInCart.exist) {
     newTotal = actualCart.total + productInCart.price
-
     delivery = newTotal > 499 ? 0 : 50
 
-    await cartRepository.updateProductInCart(userId, delivery, newTotal, data)
+    actualCart.items[indexExist].quantity += 1
+    actualCart.total = newTotal
+    actualCart.delivery = delivery
+
 
   } else {
-
     let priceReal: number = 0
 
     let discountPercentage: number = 0
@@ -176,17 +179,19 @@ export const addToCartService = async (userId: TMongoId['_id'], data: TReqToCart
       quantity: 1
     };
 
-    await cartRepository.addProductInCart(userId, cartItem, delivery, newTotal)
+    actualCart.items.push(cartItem)
+    actualCart.total = newTotal
+    actualCart.delivery = delivery
   }
+
+  await cartRepository.save(actualCart)
 
   const cartResponse = await buildCartResponse(actualCart._id);
 
   return cartResponse
 }
 
-
 export const decreaseToCartService = async (userId: TMongoId['_id'], data: TReqToCart) => {
-
   const productExist = await validateProductByIdService(data.productId)
   const maxIndex = productExist.colors.length - 1;
 
@@ -202,28 +207,36 @@ export const decreaseToCartService = async (userId: TMongoId['_id'], data: TReqT
     price: 0
   }
 
+  let indexExist: null | number = null
+
   for (let i = 0; i < actualCart.items.length; i++) {
     if (actualCart.items[i].productId.equals(data.productId) && actualCart.items[i].selectedColor === data.selectedColor) {
       productInCart.exist = true
       productInCart.quantity = actualCart.items[i].quantity
       productInCart.price = actualCart.items[i].price
+      indexExist = i
     }
   }
 
   let newTotal: number = actualCart.total - productInCart.price
   let delivery = newTotal > 499 ? 0 : 50
 
-  const setUpdate: { delivery: number, total: number; } = { delivery: delivery, total: newTotal };
-
   if (productInCart.exist) {
     if (productInCart.quantity > 1) {
-      await cartRepository.decreaseProductInCart(userId, delivery, newTotal, data)
+      actualCart.items[indexExist].quantity -= 1
     } else {
-      await cartRepository.decreaseAndRemoveProductInCart(userId, setUpdate, data)
+      actualCart.items = actualCart.items.filter(
+        item => !(item.productId.equals(productExist._id) && item.selectedColor === data.selectedColor)
+      )
     }
   } else {
     throw new HttpError(404, "Producto en cart no encontrado");
   }
+
+  actualCart.total = newTotal
+  actualCart.delivery = delivery
+
+  await cartRepository.save(actualCart)
 
   const cartResponse = await buildCartResponse(actualCart._id);
 
@@ -257,13 +270,17 @@ export const removeItemCartService = async (userId: TMongoId['_id'], data: TReqT
   let newTotal: number = actualCart.total - (productInCart.price * productInCart.quantity)
   let delivery = newTotal > 499 ? 0 : 50
 
-  const setUpdate: { delivery: number, total: number; } = { delivery: delivery, total: newTotal };
-
   if (productInCart.exist) {
-    await cartRepository.removeProductInCart(userId, setUpdate, data)
+    actualCart.items = actualCart.items.filter(
+      item => !(item.productId.equals(productExist._id) && item.selectedColor === data.selectedColor)
+    )
   } else {
     throw new HttpError(404, "Producto en cart no encontrado");
   }
+
+  actualCart.total = newTotal
+  actualCart.delivery = delivery
+  await cartRepository.save(actualCart)
 
   const cartResponse = await buildCartResponse(actualCart._id);
 
@@ -271,11 +288,15 @@ export const removeItemCartService = async (userId: TMongoId['_id'], data: TReqT
 }
 
 export const clearCartService = async (userId: TMongoId['_id']) => {
-  const cart = await cartRepository.clearCart(userId)
+  const cart = await cartRepository.findByUser(userId)
 
-  if (!cart) {
-    throw new HttpError(404, "Cart no encontrado");
-  }
+  if (!cart) throw new HttpError(404, "Cart no encontrado")
+
+  cart.items = []
+  cart.total = 0
+  cart.delivery = 50
+
+  await cartRepository.save(cart)
 
   return cart
 }
@@ -407,7 +428,7 @@ export const loadLSCardService = async (userId: TMongoId['_id'], data: TCartLSBo
   cart.total = total
   cart.delivery = delivery
 
-  await cartRepository.loadLsCart(userId, cart)
+  await cartRepository.save(cart)
 
   const cartResponse = await buildCartResponse(cart._id);
 

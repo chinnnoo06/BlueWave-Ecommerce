@@ -2,8 +2,14 @@ import { Product } from "../../models/Product"
 import { TMongoId, TMongoIdParams } from "../../types/mongo/mongo.tpyes"
 import { TProduct, TPromotion } from "../../types/product/product.types"
 import { TUser } from "../../types/user/user.types"
+import { Document } from "mongoose"
+
+type TProductDocument = Document & TProduct
 
 export const productRepository = {
+    async save(product: TProductDocument) {
+        return product.save()
+    },
 
     async findById(id: TMongoId['_id'] | string) {
         return Product.findById(id)
@@ -93,25 +99,7 @@ export const productRepository = {
         return Product.create(data)
     },
 
-    async updatedProduct(productId: TMongoIdParams['id'], data: TProduct) {
-        return Product.findByIdAndUpdate(productId, data);
-    },
-
-    async removeProduct(productId: TMongoIdParams['id']) {
-        return Product.findByIdAndDelete(productId);
-    },
-
-    async addPromotion(productId: TMongoIdParams['id'], data: TPromotion) {
-        return Product.findByIdAndUpdate(productId, { promotion: data }, { new: true })
-    },
-
-    async removePromotion(productId: TMongoIdParams['id']) {
-        return Product.findByIdAndUpdate(productId, {
-            promotion: {
-                active: false,
-                discountPercentage: 0
-            }
-        }, { new: true })
+    async deleteOne(product: TProductDocument) {
+        return product.deleteOne()
     }
-
 }

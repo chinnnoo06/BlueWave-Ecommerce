@@ -20,7 +20,7 @@ type TSearchModalProps = {
 export const SearchModal = ({ open, onClose }: TSearchModalProps) => {
     const navigate = useNavigate()
     const { loading, startLoading, stopLoading } = useFormStatus();
-    const { getSearches, addSearch } = useAppStore()
+    const { user, getSearches, addSearch } = useAppStore()
 
     const searches = getSearches()
 
@@ -39,7 +39,10 @@ export const SearchModal = ({ open, onClose }: TSearchModalProps) => {
     const onSubmit = async (data: TSearchForm) => {
         startLoading()
         try {
-            addSearch(data.search)
+
+            if (!user) {
+                addSearch(data.search)
+            }
 
             navigate(
                 `/catalogo/todos/1?search=${encodeURIComponent(data.search)}`

@@ -2,7 +2,7 @@ import { TCartItem } from "../cart/cart.types";
 import { TMongoIdParams } from "../mongo/mongo.tpyes";
 import { TUser } from "../user/user.types";
 
-export type TUserUpdateInfo = Omit<TUser, "password" | "address" | "favorites">;
+export type TUserUpdateInfo = Pick<TUser, "name" | "surname" | "email" | "phone">;
 
 export type TLogin = Pick<TUser, "email" | "password">;
 

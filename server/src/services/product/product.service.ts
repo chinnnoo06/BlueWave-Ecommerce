@@ -8,7 +8,7 @@ import { TGetProducts, TSearchProducts } from "../../types/params/params.types"
 import { TColor, TProduct, TPromotion } from "../../types/product/product.types"
 import { TMongoId, TMongoIdParams } from "../../types/mongo/mongo.tpyes";
 import { validateCategoryByIdService, validateCategoryBySlugService } from "../category/category.service"
-import { getUserSearchesService, updateUserSearchesService } from "../user/user.service"
+import { getUserSearchesService } from "../user/user.service"
 
 export const getProductsService = async (data: TGetProducts) => {
   const itemsPerPage = 9;
@@ -107,9 +107,7 @@ export const getSearchService = async (data: TSearchProducts, userId: TMongoId['
   }));
 
   if (userId) {
-    await getUserSearchesService(userId, search)
-
-    const userUpdated = await updateUserSearchesService(userId, search)
+    const userSearches = await getUserSearchesService(userId, search)
 
     return {
       products: productsFormatted,
@@ -117,7 +115,7 @@ export const getSearchService = async (data: TSearchProducts, userId: TMongoId['
       page,
       itemsPerPage,
       pages: Math.ceil(totalDocs / itemsPerPage),
-      userSearches: userUpdated.searches
+      userSearches: userSearches 
     }
   }
 
@@ -192,7 +190,6 @@ export const addProductService = async (data: TProduct, files: Express.Multer.Fi
 }
 
 export const updateProductService = async (productId: TMongoIdParams['id'], data: TProduct, files: Express.Multer.File[]) => {
-
   let newColors: TColor[] = [];
   let oldColors: TColor[] = [];
 
@@ -204,9 +201,14 @@ export const updateProductService = async (productId: TMongoIdParams['id'], data
   let numNewColors = newColors.length
 
   const categoryExist = await validateCategoryByIdService(data.category)
-  const productExist = await productRepository.findById(productId)
+  const product = await productRepository.findById(productId)
 
-  if (!categoryExist || !productExist) {
+  oldColors = product.colors.map(color => ({
+    ...color,
+    images: [...color.images]
+  }))
+
+  if (!categoryExist || !product) {
     for (const file of files) {
       const filePath = path.join(__dirname, "../../uploads/products", file.filename);
 
@@ -219,24 +221,21 @@ export const updateProductService = async (productId: TMongoIdParams['id'], data
     }
 
     if (!categoryExist) throw new HttpError(404, "No existe la categoría");
-    if (!productExist) throw new HttpError(404, "No existe el producto");
+    if (!product) throw new HttpError(404, "No existe el producto");
   }
 
-  let slug = productExist.slug
+  let slug = product.slug
 
-  if (data.name !== productExist.name) {
+  if (data.name !== product.name) {
     const baseSlug = slugify(data.name, { lower: true, strict: true })
     slug = `${baseSlug}-${Date.now().toString().slice(-5)}`
   }
 
-  const objProduct: TProduct = {
-    name: data.name,
-    slug: slug,
-    description: data.description,
-    category: data.category,
-    price: data.price,
-    colors: []
-  }
+  product.name = data.name
+  product.slug = slug
+  product.description = data.description
+  product.category = data.category
+  product.price = data.price
 
   for (let i = 0; i < numNewColors; i++) {
 
@@ -246,17 +245,15 @@ export const updateProductService = async (productId: TMongoIdParams['id'], data
 
     const images = filesForColor.map(file => file.filename);
 
-    objProduct.colors.push({
-      color: newColors[i].color,
-      hex: newColors[i].hex,
-      images: images
-    });
+    product.colors[i].color = newColors[i].color
+    product.colors[i].hex = newColors[i].hex
+    product.colors[i].images = images
+
   }
 
-  const updatedProduct = await productRepository.updatedProduct(productId, objProduct)
+  await productRepository.save(product)
 
   // Eliminar imagenes anteriores
-  oldColors = productExist.colors
   let numOldColors = oldColors.length
 
   for (let i = 0; i < numOldColors; i++) {
@@ -273,18 +270,17 @@ export const updateProductService = async (productId: TMongoIdParams['id'], data
     }
   }
 
-  return updatedProduct
+  return product
 }
-
 
 export const removeProductService = async (productId: TMongoIdParams['id']) => {
   let colorsP: TColor[] = [];
 
-  const productExist = await productRepository.removeProduct(productId)
+  const product = await productRepository.findById(productId)
 
-  if (!productExist) throw new HttpError(404, "No existe el producto");
+  if (!product) throw new HttpError(404, "No existe el producto");
 
-  colorsP = productExist.colors
+  colorsP = product.colors
 
   let numColors = colorsP.length
 
@@ -304,26 +300,38 @@ export const removeProductService = async (productId: TMongoIdParams['id']) => {
 
     }
   }
+
+  await productRepository.deleteOne(product)
 }
 
 export const addPromotionService = async (productId: TMongoIdParams['id'], data: TPromotion) => {
-  const product = await productRepository.addPromotion(productId, data)
+  const product = await productRepository.findById(productId)
 
   if (!product) throw new HttpError(404, "No existe el producto");
+
+  product.promotion.active = data.active
+  product.promotion.discountPercentage = data.discountPercentage
+
+  await productRepository.save(product)
 
   return product
 }
 
 export const removePromotionService = async (productId: TMongoIdParams['id']) => {
-  const product = await productRepository.removePromotion(productId)
+  const product = await productRepository.findById(productId)
 
   if (!product) throw new HttpError(404, "No existe el producto");
+
+  product.promotion.active = false
+  product.promotion.discountPercentage = 0
+
+  await productRepository.save(product)
 
   return product
 }
 
 export const getProductInLsCartService = async (productId: TMongoId['_id']) => {
-  return await  productRepository.getProductInLsCart(productId)
+  return await productRepository.getProductInLsCart(productId)
 }
 
 export const validateProductByIdService = async (productId: TMongoId['_id']) => {
