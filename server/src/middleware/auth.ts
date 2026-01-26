@@ -33,9 +33,9 @@ export function auth(allowedRoles: TUserRole[] = []) {
                 return res.status(403).json({ status: "error", mensaje: "No tienes permisos para acceder" });
             }
 
-            const user = await User.findById(payload._id)
+            const exist = await User.exists({ _id: payload._id, role: payload.role })
 
-            if (!user) {
+            if (!exist) {
                 return res.status(401).json({ status: "error", mensaje: "Token inválido" });
             }
 
@@ -63,7 +63,7 @@ export const authOptional = async (req: Request, res: Response, next: NextFuncti
     }
 
     try {
-        let payload = jwt.decode(token, SECRET_KEY);
+        const payload = jwt.decode(token, SECRET_KEY) as TPayloadToken;
 
         // Validar expiración
         if (payload.exp <= moment().unix()) {
@@ -71,13 +71,14 @@ export const authOptional = async (req: Request, res: Response, next: NextFuncti
             return next();
         }
 
-        const user = await User.findById(payload._id)
+        const exist = await User.exists({ _id: payload._id, role: payload.role })
 
-        if (!user) {
+        if (!exist) {
             return res.status(401).json({ status: "error", mensaje: "Token inválido" });
         }
 
         req.user = payload;
+
         next();
 
     } catch (error) {
