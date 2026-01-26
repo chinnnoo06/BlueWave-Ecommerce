@@ -1,9 +1,9 @@
-import { TUserLogged } from "../../types/user/user.types";
+import { TPayloadToken } from "../../services/jwt/token.service";
 
 declare global {
     namespace Express {
         interface Request {
-            user?: TUserLogged;
+            user?: TPayloadToken;
             colorCounters?: { [colorIndex: number]: number };
         }
     }
