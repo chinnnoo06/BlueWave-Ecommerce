@@ -3,8 +3,13 @@ import moment from 'moment';
 import { TUserLogged } from '../../types/user/user.types';
 import { SECRET_KEY } from '../../config/env';
 
+export type TPayloadToken = TUserLogged & {
+    iat: number
+    exp: number
+}
+
 export const createToken = (user: TUserLogged) => {
-    const payload = {
+    const payload : TPayloadToken = {
         _id: user._id,
         role: user.role,
         iat: moment().unix(),

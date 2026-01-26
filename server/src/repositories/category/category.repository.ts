@@ -1,9 +1,6 @@
 import { Category } from "../../models/Category"
-import { TCategory } from "../../types/category/category.types"
+import { TCategory, TCategoryDocument } from "../../types/category/category.types"
 import { TMongoId } from "../../types/mongo/mongo.tpyes"
-import { Document } from "mongoose"
-
-type TCategoryDocument = Document & TCategory
 
 export const categoryRepository = {
     async findById(categoryId: TMongoId['_id'] | string) {

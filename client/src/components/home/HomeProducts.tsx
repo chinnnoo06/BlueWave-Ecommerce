@@ -15,7 +15,7 @@ export const HomeProducts = () => {
 
     useEffect(() => {
         getHomeProducts()
-    }, [])
+    }, [getHomeProducts])
 
     const { carouselRef, itemWidth, activeIndex, scroll } = useCarouselIndicators({
         items: homeProducts,
@@ -66,7 +66,7 @@ export const HomeProducts = () => {
                             style={{ width: `${itemWidth}px` }}
                             className="relative shrink-0 bg-transparent transition-all duration-200 group"
                         >
-                            <ProductCart key={product._id} product={product} />
+                            <ProductCart product={product} />
                         </div>
 
                     ))}

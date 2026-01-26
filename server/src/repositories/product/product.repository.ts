@@ -1,10 +1,7 @@
 import { Product } from "../../models/Product"
 import { TMongoId, TMongoIdParams } from "../../types/mongo/mongo.tpyes"
-import { TProduct, TPromotion } from "../../types/product/product.types"
+import { TProduct, TProductDocument } from "../../types/product/product.types"
 import { TUser } from "../../types/user/user.types"
-import { Document } from "mongoose"
-
-type TProductDocument = Document & TProduct
 
 export const productRepository = {
     async save(product: TProductDocument) {

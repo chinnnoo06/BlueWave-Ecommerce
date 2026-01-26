@@ -97,7 +97,7 @@ export const MobileNav = ({
                 : "text-[#001F3F] hover:bg-white hover:text-[#0C71E4]"}`
             }
           >
-            Home
+            Inicio
           </NavLink>
 
           <button

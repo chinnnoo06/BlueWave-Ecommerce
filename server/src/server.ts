@@ -18,6 +18,7 @@ import articleRoutes from './routes/article.routes'
 import stateRoutes from './routes/state.routes'
 import stripeWebhookRouter from "./routes/stripeWebHook.routes"
 import { errorHandler } from './middleware/error'
+import { FRONTEND_URL } from './config/env'
 
 connection()
 
@@ -27,7 +28,7 @@ server.use(cookieParser());
 
 // permitir conexiones
 server.use(cors({
-    origin: process.env.FRONTEND_URL, // tu frontend
+    origin: FRONTEND_URL, 
     credentials: true
 }));
 

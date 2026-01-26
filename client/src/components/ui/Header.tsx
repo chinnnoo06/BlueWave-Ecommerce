@@ -45,7 +45,7 @@ export const Header = () => {
                 `font-semibold text-lg xl:text-xl ${isActive ? 'text-[#0C71E4]' : 'text-[#001F3F] hover:text-[#0C71E4] transition'}`
               }
             >
-              Home
+              Inicio
             </NavLink>
 
             <div className="relative" ref={refs.modalRef}>

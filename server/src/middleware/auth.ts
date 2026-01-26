@@ -2,18 +2,18 @@ import { NextFunction, Request, Response } from "express";
 import jwt from 'jwt-simple'
 import moment from "moment";
 import { SECRET_KEY } from "../config/env";
+import { TPayloadToken } from "../services/jwt/token.service";
+import { User } from "../models/User";
 
+type TUserRole = 'client' | 'admin'
 
-export function auth(allowedRoles = []) {
-    return function (req: Request, res: Response, next: NextFunction) {
+export function auth(allowedRoles: TUserRole[] = []) {
+    return async function (req: Request, res: Response, next: NextFunction) {
         let token = null;
 
         // Buscar token en cookies
         if (req.cookies && req.cookies.token) {
             token = req.cookies.token;
-        }
-        if (!token && req.headers.authorization) {
-            token = req.headers.authorization.replace(/['"]+/g, '');
         }
 
         if (!token) {
@@ -21,7 +21,7 @@ export function auth(allowedRoles = []) {
         }
 
         try {
-            const payload = jwt.decode(token, SECRET_KEY);
+            const payload = jwt.decode(token, SECRET_KEY) as TPayloadToken;
 
             // Validar expiración
             if (payload.exp <= moment().unix()) {
@@ -33,6 +33,12 @@ export function auth(allowedRoles = []) {
                 return res.status(403).json({ status: "error", mensaje: "No tienes permisos para acceder" });
             }
 
+            const user = await User.findById(payload._id)
+
+            if (!user) {
+                return res.status(401).json({ status: "error", mensaje: "Token inválido" });
+            }
+
             req.user = payload;
 
             next();
@@ -42,17 +48,12 @@ export function auth(allowedRoles = []) {
     };
 }
 
-export const authOptional = (req: Request, res: Response, next: NextFunction) => {
+export const authOptional = async (req: Request, res: Response, next: NextFunction) => {
     let token = null;
 
     // 👉 Buscar primero en cookies
     if (req.cookies.token) {
         token = req.cookies.token;
-    }
-
-    // (Opcional) también aceptar token en Authorization por si lo usas en el futuro
-    if (!token && req.headers.authorization) {
-        token = req.headers.authorization.replace(/['"]+/g, '');
     }
 
     // Si no hay token
@@ -68,6 +69,12 @@ export const authOptional = (req: Request, res: Response, next: NextFunction) =>
         if (payload.exp <= moment().unix()) {
             req.user = null;
             return next();
+        }
+
+        const user = await User.findById(payload._id)
+
+        if (!user) {
+            return res.status(401).json({ status: "error", mensaje: "Token inválido" });
         }
 
         req.user = payload;

@@ -15,7 +15,7 @@ export const HomeCategories = () => {
 
     useEffect(() => {
         getCategories()
-    }, [])
+    }, [getCategories])
 
     const { carouselRef, itemWidth, activeIndex, scroll } = useCarouselIndicators({
         items: categories,

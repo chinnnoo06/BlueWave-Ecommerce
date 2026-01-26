@@ -1,4 +1,5 @@
 import { Types } from "mongoose";
+import { Document } from "mongoose"
 
 export type TColor = {
     color: string,
@@ -23,4 +24,4 @@ export type TProduct = {
 
 export type TProductwithID = TProduct & { _id: Types.ObjectId }
 
-
+export type TProductDocument = Document & TProduct

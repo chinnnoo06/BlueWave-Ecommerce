@@ -2,10 +2,10 @@ import path from "path"
 import fs from "fs";
 import slugify from "slugify";
 
-import { HttpError, shuffleWithSeed } from "../../helpers"
+import { deleteUploadedFiles, HttpError, shuffleWithSeed } from "../../helpers"
 import { productRepository } from "../../repositories/product/product.repository"
 import { TGetProducts, TSearchProducts } from "../../types/params/params.types"
-import { TColor, TProduct, TPromotion } from "../../types/product/product.types"
+import { TColor, TProduct, TProductDocument, TPromotion } from "../../types/product/product.types"
 import { TMongoId, TMongoIdParams } from "../../types/mongo/mongo.tpyes";
 import { validateCategoryByIdService, validateCategoryBySlugService } from "../category/category.service"
 import { getUserSearchesService } from "../user/user.service"
@@ -115,7 +115,7 @@ export const getSearchService = async (data: TSearchProducts, userId: TMongoId['
       page,
       itemsPerPage,
       pages: Math.ceil(totalDocs / itemsPerPage),
-      userSearches: userSearches 
+      userSearches: userSearches
     }
   }
 
@@ -130,128 +130,119 @@ export const getSearchService = async (data: TSearchProducts, userId: TMongoId['
 }
 
 export const addProductService = async (data: TProduct, files: Express.Multer.File[]) => {
+  try {
+    const categoryExist = await validateCategoryByIdService(data.category)
 
-  let colorsP: TColor[] = [];
-
-  // colores nuevos
-  if (typeof data.colors === "string") {
-    colorsP = JSON.parse(data.colors) as TColor[];
-  }
-
-  let numColors = colorsP.length
-
-  const categoryExist = await validateCategoryByIdService(data.category)
-
-  if (!categoryExist) {
-    for (const file of files) {
-      const filePath = path.join(__dirname, "../../uploads/products", file.filename);
-
-      try {
-        await fs.promises.unlink(filePath);
-      } catch (err) {
-        console.error(`Error eliminando ${file.filename}: ${err}`);
-        throw new HttpError(500, `Error eliminando ${file.filename}: ${err}`);
-      }
+    if (!categoryExist) {
+      throw new HttpError(404, "No existe la categoría");
     }
 
-    throw new HttpError(404, "No existe la categoría");
+    const baseSlug = slugify(data.name, { lower: true, strict: true })
+    const slug = `${baseSlug}-${Date.now().toString().slice(-5)}`
+
+
+    let colorsP: TColor[] = [];
+
+    // colores nuevos
+    if (typeof data.colors === "string") {
+      colorsP = JSON.parse(data.colors) as TColor[];
+    }
+
+    let numColors = colorsP.length
+
+    const objProduct: TProduct = {
+      name: data.name,
+      slug: slug,
+      description: data.description,
+      category: data.category,
+      price: data.price,
+      colors: []
+    }
+
+    for (let i = 0; i < numColors; i++) {
+
+      const fieldname = `colorImages[${i}]`;
+
+      const filesForColor = files.filter(file => file.fieldname === fieldname);
+
+      const images = filesForColor.map(file => file.filename);
+
+      objProduct.colors.push({
+        color: colorsP[i].color,
+        hex: colorsP[i].hex,
+        images: images
+      });
+    }
+
+    const createdProduct = await productRepository.addProduct(objProduct)
+
+    return createdProduct
+  } catch (error) {
+    deleteUploadedFiles(files)
+    throw error;
   }
-
-  const baseSlug = slugify(data.name, { lower: true, strict: true })
-  const slug = `${baseSlug}-${Date.now().toString().slice(-5)}`
-
-  const objProduct: TProduct = {
-    name: data.name,
-    slug: slug,
-    description: data.description,
-    category: data.category,
-    price: data.price,
-    colors: []
-  }
-
-  for (let i = 0; i < numColors; i++) {
-
-    const fieldname = `colorImages[${i}]`;
-
-    const filesForColor = files.filter(file => file.fieldname === fieldname);
-
-    const images = filesForColor.map(file => file.filename);
-
-    objProduct.colors.push({
-      color: colorsP[i].color,
-      hex: colorsP[i].hex,
-      images: images
-    });
-  }
-
-  const createdProduct = await productRepository.addProduct(objProduct)
-
-  return createdProduct
 }
 
 export const updateProductService = async (productId: TMongoIdParams['id'], data: TProduct, files: Express.Multer.File[]) => {
-  let newColors: TColor[] = [];
   let oldColors: TColor[] = [];
+  let product: TProductDocument | null = null
 
-  // colores nuevos
-  if (typeof data.colors === "string") {
-    newColors = JSON.parse(data.colors) as TColor[];
-  }
+  try {
+    let newColors: TColor[] = [];
 
-  let numNewColors = newColors.length
-
-  const categoryExist = await validateCategoryByIdService(data.category)
-  const product = await productRepository.findById(productId)
-
-  oldColors = product.colors.map(color => ({
-    ...color,
-    images: [...color.images]
-  }))
-
-  if (!categoryExist || !product) {
-    for (const file of files) {
-      const filePath = path.join(__dirname, "../../uploads/products", file.filename);
-
-      try {
-        await fs.promises.unlink(filePath);
-      } catch (err) {
-        console.error(`Error eliminando ${file.filename}: ${err}`);
-        throw new HttpError(500, `Error eliminando ${file.filename}: ${err}`);
-      }
+    // colores nuevos
+    if (typeof data.colors === "string") {
+      newColors = JSON.parse(data.colors) as TColor[];
     }
 
-    if (!categoryExist) throw new HttpError(404, "No existe la categoría");
-    if (!product) throw new HttpError(404, "No existe el producto");
+    let numNewColors = newColors.length
+
+    const categoryExist = await validateCategoryByIdService(data.category)
+    product = await productRepository.findById(productId)
+
+    oldColors = product.colors.map(color => ({
+      ...color,
+      images: [...color.images]
+    }))
+
+    if (!categoryExist || !product) {
+      if (!categoryExist) throw new HttpError(404, "No existe la categoría");
+      if (!product) throw new HttpError(404, "No existe el producto");
+    }
+
+    let slug = product.slug
+
+    if (data.name !== product.name) {
+      const baseSlug = slugify(data.name, { lower: true, strict: true })
+      slug = `${baseSlug}-${Date.now().toString().slice(-5)}`
+    }
+
+    product.name = data.name
+    product.slug = slug
+    product.description = data.description
+    product.category = data.category
+    product.price = data.price
+
+    for (let i = 0; i < numNewColors; i++) {
+
+      const fieldname = `colorImages[${i}]`;
+
+      const filesForColor = files.filter(file => file.fieldname === fieldname);
+
+      const images = filesForColor.map(file => file.filename);
+
+      product.colors[i].color = newColors[i].color
+      product.colors[i].hex = newColors[i].hex
+      product.colors[i].images = images
+
+    }
+
+    await productRepository.save(product)
+
+  } catch (error) {
+    deleteUploadedFiles(files)
+    throw error;
   }
-
-  let slug = product.slug
-
-  if (data.name !== product.name) {
-    const baseSlug = slugify(data.name, { lower: true, strict: true })
-    slug = `${baseSlug}-${Date.now().toString().slice(-5)}`
-  }
-
-  product.name = data.name
-  product.slug = slug
-  product.description = data.description
-  product.category = data.category
-  product.price = data.price
-
-  for (let i = 0; i < numNewColors; i++) {
-
-    const fieldname = `colorImages[${i}]`;
-
-    const filesForColor = files.filter(file => file.fieldname === fieldname);
-
-    const images = filesForColor.map(file => file.filename);
-
-    product.colors[i].color = newColors[i].color
-    product.colors[i].hex = newColors[i].hex
-    product.colors[i].images = images
-
-  }
-
-  await productRepository.save(product)
 
   // Eliminar imagenes anteriores
   let numOldColors = oldColors.length
@@ -265,7 +256,6 @@ export const updateProductService = async (productId: TMongoIdParams['id'], data
         console.log(`Imagen eliminada: ${oldColors[i].images[j]}`);
       } catch (err: any) {
         console.error(`Error eliminando ${oldColors[i].images[j]}: ${err.message}`);
-        throw new HttpError(500, `Error eliminando ${oldColors[i].images[j]}: ${err.message}`);
       }
     }
   }
@@ -284,6 +274,8 @@ export const removeProductService = async (productId: TMongoIdParams['id']) => {
 
   let numColors = colorsP.length
 
+  await productRepository.deleteOne(product)
+
   for (let i = 0; i < numColors; i++) {
 
     for (let j = 0; j < colorsP[i].images.length; j++) {
@@ -295,13 +287,9 @@ export const removeProductService = async (productId: TMongoIdParams['id']) => {
         console.log(`Imagen eliminada: ${colorsP[i].images[j]}`);
       } catch (err: any) {
         console.error(`Error eliminando ${colorsP[i].images[j]}: ${err.message}`);
-        throw new HttpError(500, `Error eliminando ${colorsP[i].images[j]}: ${err.message}`);
       }
-
     }
   }
-
-  await productRepository.deleteOne(product)
 }
 
 export const addPromotionService = async (productId: TMongoIdParams['id'], data: TPromotion) => {
