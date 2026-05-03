@@ -24,20 +24,20 @@ Este proyecto fue diseñado como una **base de e-commerce de producción**, no c
 
 ## Backend
 
-El backend sigue una arquitectura **Clean Architecture / Service–Repository Pattern**:
+El backend sigue una arquitectura en capas (**Layered Architecture**) inspirada en **Clean Architecture**, utilizando el patrón **Controller–Service–Repository**.
 
 ### Responsabilidades
 
 - **Controllers**: Manejan HTTP (req / res)
 - **Services**: Contienen la lógica de negocio
-- **Repositories**: Acceso a datos (MongoDB)
-- **Models**: Esquemas de base de datos
+- **Repositories**: Encapsulan el acceso a datos
+- **Models**: Definen los esquemas de la base de datos
 
 ### Beneficios
 
-- Cambiar MongoDB por otra base de datos sin tocar lógica de negocio
-- Cambiar Stripe por otro proveedor sin romper el checkout
-- Testear servicios sin necesidad de base de datos
+- Cambiar la base de datos u ORM con impacto mínimo en la lógica de negocio
+- Cambiar proveedores externos (ej. Stripe) sin afectar el resto del sistema
+- Facilitar pruebas unitarias en la capa de servicios
 - Código mantenible y desacoplado de Express
 
 ---

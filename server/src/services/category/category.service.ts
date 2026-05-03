@@ -134,6 +134,8 @@ export const updateCategoryService = async (categoryId: TMongoIdParams['id'], da
   return category;
 }
 
+
+//QUITAR ESTO Y HACER QUE SE LLAMEN DESDE EL SERVICIO DE PRODUCT
 export const validateCategoryBySlugService = async (slug: TCategory['slug']) => {
   return await categoryRepository.findBySlug(slug)
 }
